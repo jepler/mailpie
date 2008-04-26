@@ -23,8 +23,10 @@ See distutils documentation for more installation options.
 
 USAGE
 
-To add a mailbox full of messages to the mailpie storage: mailpie-add
-example.mbox
+To add a mailbox full of messages to the mailpie storage:
+    mailpie-add example.mbox
+After adding messages with mailpie-add, the original mbox file is not
+needed to perform searches.
 
 To search for messages:
     mailpie-search from=jepler mutt
