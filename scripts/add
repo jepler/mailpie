@@ -102,12 +102,14 @@ def main(args):
     args = args or ["-"]
     count = 0
     start = time.time()
-    for filename in args:
-        sys.stderr.write(filename)
-        count += add(base, filename, swish)
-        sys.stderr.write("\n")
-    if swish:
-        swish.close()
+    try:
+        for filename in args:
+            sys.stderr.write(filename)
+            count += add(base, filename, swish)
+            sys.stderr.write("\n")
+    finally:
+        if swish:
+            swish.close()
     end = time.time()
     print >>sys.stderr, "Added %d messages in %s (%.1f messages/second)\n" % (count, format_time(end - start), count / (end-start))
 if __name__ == '__main__':
