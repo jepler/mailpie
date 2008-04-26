@@ -25,10 +25,14 @@ def parsedate(s):
 def main(args):
     before = after = target = None
     mailreader = ["mutt", "-f"]
+    limit = 2000
 
     base = os.path.expanduser("~/.mailpie")
 
-    opts, args = getopt.getopt(args, "o:pM:b:a:h?")
+    try:
+        opts, args = getopt.getopt(args, "o:pM:b:a:l:h?")
+    except getopt.GetoptError, detail:
+        usage(detail)
 
     for k, v in opts:
         if k == "-o":
@@ -39,6 +43,8 @@ def main(args):
             target = None
         elif k == "-M":
             mailreader = v.split()
+        elif k == "-l":
+            limit = int(v)
         elif k == "-a": after = parsedate(v)
         elif k == "-b": before = parsedate(v)
 
@@ -60,10 +66,13 @@ def main(args):
     else:
         f = open(target, "w")
 
+    count = 0
     for filename in swish.stdout:
         filename = filename.strip()
         path = os.path.join(base, filename[:2], filename[2:])
         f.write(open(path).read())
+        count = count + 1
+        if count == limit: break
 
     if target is None:
         f.flush()

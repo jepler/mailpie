@@ -1,13 +1,15 @@
 #!/usr/bin/python
+# ... | swish-e -S prog -i stdin -c etc/swish.config 
+
 import os
-import email.parser, email.message
+import email.Parser, email.Message
 import getopt
 import sys
 import string
 import time
 import rfc822
 
-parser = email.parser.Parser()
+parser = email.Parser.Parser()
 
 def write_one(path, data):
     sys.stdout.write("Path-name: %s\nContent-Length: %d\n\n" %(path, len(data)))
@@ -51,7 +53,7 @@ def get_payload(m):
         return escape(payload)
     result = []
     for p in payload:
-        if not isinstance(p, email.message.Message):
+        if not isinstance(p, email.Message.Message):
             print >>sys.stderr, "Unexpected payload item", p.__class__.__name__
             continue
         result.append("<attachment>")

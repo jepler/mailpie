@@ -27,6 +27,7 @@ def make_dir_once(dir, made=set()):
     made.add(dir)
 
 def store(base, content):
+    sys.stderr.write("."); sys.stderr.flush()
     hash = sha.new(content).hexdigest()
     dir = os.path.join(base, hash[:2])
     file = os.path.join(base, hash[:2], hash[2:])
@@ -50,8 +51,8 @@ def store(base, content):
 
 def usage(result=0):
     print """mailpie-add: Add messages to a mailpie storage area
-Usage: %s [-b dir] [file ...]
-        -b dir: The root directory of the mailpie storage  Default: ~/mailpie
+Usage: %s [-B dir] [file ...]
+        -B dir: The root directory of the mailpie storage  Default: ~/.mailpie
         file:   Unix mailbox file(s) to add.               Default: stdin
 """ % os.path.basename(sys.argv[0])
     raise SystemExit, result
@@ -63,15 +64,15 @@ def add(base, mailbox):
 
 def main(args):
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "b:h?", ["--help"])
+        opts, args = getopt.getopt(args, "B:h?", ["--help"])
     except getopt.GetoptError, detail:
         usage(detail)
 
-    base = os.path.expanduser("~/mailpie")
+    base = os.path.expanduser("~/.mailpie")
 
     for k, v in opts:
         if k in ("-?", "-h", "--help"): usage(0)
-        if k == "-b": base = v
+        if k == "-B": base = v
 
     args = args or ["-"]
     for filename in args:
