@@ -24,7 +24,6 @@ def parsedate(s):
     return getoutput(["date", "-d%s" % s, "+%s"])
 
 def run_swish(index, args, before=None, after=None):
-    print >>sys.stderr, "run_swish", repr(args)
     if not args:
         return
     swishargs = ['swish-e', '-H0', '-x<swishdocpath>\t<in-reply-to>\t<references>\n',
@@ -92,7 +91,6 @@ def main(args):
 
         return '"%s"' % arg
 
-    print >>sys.stderr, "main", repr(args)
     args = [q(arg) for arg in args]
     for filename, irt, references in run_swish(index, args, before, after):
         path = os.path.join(base, filename[:2], filename[2:])

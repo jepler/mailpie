@@ -146,9 +146,7 @@ class Swish:
 
     def close(self):
         self.swish.stdin.close()
-        print "swish wait"
         result = self.swish.wait()
-        print "swish result", result
         if result != 0: raise RuntimeError, "swish-e exited with code %d" % result
         if self.since:
             os.spawnvp(os.P_WAIT, 'swish-e', ['swish-e', '-M', self.subfile("index"), self.subfile("incremental"), self.subfile("merge")])
@@ -157,7 +155,7 @@ class Swish:
             os.unlink(self.subfile("incremental"))
             os.unlink(self.subfile("incremental.prop"))
         if self.start:
-            open(self.lastfile, "w").write(str(self.start))
+            open(self.lastfile(), "w").write(str(self.start))
 
     def do_one(self, filename, key, data=None):
         do_one(self.since, filename, key, data, self.swish.stdin)
