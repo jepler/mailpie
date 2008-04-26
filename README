@@ -1,5 +1,15 @@
 mailpie - e-mail full text search
 
+PURPOSE
+
+mailpie is a suite of programs for commandline full-text search of large
+e-mail archives.  Keep your inbox uncluttered while retaining the
+ability to quickly find an old message that becomes relevant again.
+
+In fact, mailpie performs searches much more quickly than many MUAs'
+built in search facilities because it uses a time-tested full text
+indexer (swish-e).
+
 
 REQUIREMENTS
 
@@ -46,8 +56,9 @@ For more information on commandline options, see mailpie-xxx --help.
 TIPS
 
 Because swish-e can take a long time to merge two index files together,
-wait until you have many messages before running it.  For instance, use
-a cron job to add a full day's messages in a single operation.
+wait until you have many messages before running mailpie-add.  For
+instance, use a cron job to add a full day's messages in a single
+operation.
 
 
 PRINCIPLE
