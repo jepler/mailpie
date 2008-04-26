@@ -23,26 +23,22 @@ See distutils documentation for more installation options.
 
 USAGE
 
-To add a mailbox full of messages to the mailpie storage:
-    mailpie-add example.mbox
+To add a mailbox full of messages to the mailpie storage: mailpie-add
+example.mbox
 
 To search for messages:
-    mailpie-search from=jepler
+    mailpie-search from=jepler mutt
+This will find messages where the From: line matches 'jepler' and the
+header or body matches 'mutt'.
+
 Available search tags are:
     subject from to cc bcc list-id message-id date header
-without a tag, the message headers and body are all searched.
+Without a tag, the message headers and body are all searched.
 
 To rebuild the index from scratch (e.g., in case of an aborted
-mailpie-add):
-    mailpie-index
+mailpie-add): mailpie-index
 
 For more information on commandline options, see mailpie-xxx --help.
-
-
-REMOVING MESSAGES
-
-There is no provision for removing messages from a mailpie storage area
-or from the index.
 
 
 TIPS
@@ -50,3 +46,66 @@ TIPS
 Because swish-e can take a long time to merge two index files together,
 wait until you have many messages before running it.  For instance, use
 a cron job to add a full day's messages in a single operation.
+
+
+PRINCIPLE
+
+mailpie-add splits mailboxes into individual messages, which are stored
+in separate files according to their sha1 hash.
+
+When indexing, mailpie-add and mailpie-index convert each message into
+an xml document with markup that indicates headers that should be
+indexed specially (e.g., with the <from></from> tag).  These xml
+documents are then handed off to swish-e to index.
+
+When searching, mailpie-search involkes swish-e to find the messages
+that match the given search terms.  It concatentates each message into
+an mbox and then optionally invokes a mailreader.  Optionally,
+mailpie-search follows in-reply-to and references to find other messages
+in the same thread as matching messages.
+
+
+EFFICIENCY
+
+When adding thousands of messages, the average rate on a 1.8GHz machine
+is 60/second.
+
+When searching tens of thousands of messages, the time is well under 1
+second for 100 results when the swish indexes are in memory.
+
+
+NON-FEATURES
+
+The following features are outside the scope of mailpie and are unlikely
+to be added:
+
+ * A Graphical User Interface
+
+ * Support for mailbox formats other than 'mbox'
+
+
+BUGS
+
+ * When searching for threads, only messages earlier in the thread than
+   the matching message are found.
+
+ * There is no provision for removing messages from a mailpie storage area
+   or from the index.
+
+
+COPYRIGHT
+
+Copyright © 2008 Jeff Epler <jepler@unpythonic.net>
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+                                                                          
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+                                                                          
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
