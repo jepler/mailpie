@@ -146,9 +146,6 @@ def main(args):
         if k in ("-i", "--incremental"):
             use_last = True
 
-    if start is not None and use_last:
-        usage("Error: --since and --incremental are mutually exclusive")
-
     lock = Lock(base + ".lock")
 
     lastfile = base + ".last"
