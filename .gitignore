@@ -1,3 +1,5 @@
 .*.sw?
 data
 *.py[co]
+build
+dist
