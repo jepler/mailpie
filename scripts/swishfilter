@@ -13,9 +13,11 @@ import subprocess
 
 swishconfig_template = """
 DefaultContents XML*
-IndexFile %s.index
+IndexFile %s
 MetaNames subject from to cc bcc list-id message-id date
+PropertyNames in-reply-to references
 PropertyNamesDate date
+MaxWordLimit 999
 """
 
 parser = email.Parser.Parser()
@@ -105,13 +107,15 @@ def do_one(start, filename, key):
     if start is not None:
         if os.stat(filename).st_mtime < start: return
     m = parser.parse(open(filename))
-    result = ['<?xml version="1.0" encoding="UTF-8"?><message><headers>']
+    result = ['<?xml version="1.0" encoding="UTF-8"?><message><header>']
     for h in m.keys():
         h = h.lower()
         for v in m.get_all(h):
+            v = v.replace("\n", " ")
+            v = v.replace("\t", " ")
             if h in date_fields: v = parse_date(v)
             result.append('<%s>%s</%s>\n' % (h, escape(v), h))
-    result.append('</headers><body>')
+    result.append('</header><body>')
     result.append(get_payload(m))
     result.append('</body></message>')
     write_one(key, "".join(result))
@@ -132,22 +136,23 @@ def main(args):
         usage(detail)
 
     base = os.path.expanduser("~/.mailpie")
-    start = None
+    start = time.time()
     use_last = False
 
     for k, v in opts:
         if k in ("-?", "-h", "--help"): usage()
         if k in ("-B", "--base"): base = v
         if k in ("-s", "--since"): start = float(v)
-        if k in ("-i", "--incremental"): use_last = time.time()
+        if k in ("-i", "--incremental"):
+            use_last = True
 
     if start is not None and use_last:
         usage("Error: --since and --incremental are mutually exclusive")
 
     lock = Lock(base + ".lock")
 
+    lastfile = base + ".last"
     if use_last:
-        lastfile = base + ".last"
         if os.path.exists(lastfile):
             start = float(open(lastfile).read())
 
@@ -171,7 +176,7 @@ def main(args):
         if not os.path.exists(dir): continue
         os.chdir(dir)
         for file in os.listdir(os.path.curdir):
-            do_one(start, file, dir+file)
+            do_one(use_last and start, file, dir+file)
         os.chdir(os.path.pardir)
     swish.stdin.close()
     result = swish.wait()
@@ -188,7 +193,7 @@ def main(args):
         else:
             os.rename(index + ".incremental", index)
             os.rename(index + ".incremental.prop", index + ".prop")
-        open(lastfile, "w").write("%s" % use_last) 
+    open(lastfile, "w").write(str(start))
 
 if __name__ == '__main__':
     main(sys.argv[1:])

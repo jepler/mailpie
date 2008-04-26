@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import sys, os, subprocess, shutil, getopt, tempfile
+import sys, os, subprocess, shutil, getopt, tempfile, re
 sys.stdin.close()
 
 def usage(result=0):
@@ -13,6 +13,7 @@ Usage: %s [-o file|-p|-m] [-b date] [-a date] [-M mailreader] terms...
     -b date: Only include messages before date
     -a date: Only include messages after date
 """ % os.path.basename(sys.argv[0])
+    raise SystemExit, result
 
 def getoutput(cmdline):
     p = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
@@ -22,15 +23,35 @@ def getoutput(cmdline):
 def parsedate(s):
     return getoutput(["date", "-d%s" % s, "+%s"])
 
+def run_swish(index, args, before=None, after=None):
+    print >>sys.stderr, "run_swish", repr(args)
+    if not args:
+        return
+    swishargs = ['swish-e', '-H0', '-x<swishdocpath>\t<in-reply-to>\t<references>\n',
+        '-f', index,
+        '-w', " ".join(args)]
+    if before or after:
+        if before is None: before = 0
+        if after is None: after = sys.maxint
+        swishargs.extend(["-L", "date", str(before), str(after)])
+
+    swish = subprocess.Popen(swishargs, stdout=subprocess.PIPE)
+    for row in swish.stdout:
+        split = row.rstrip("\n").split("\t")
+        if len(split) != 3: raise ValueError, row
+        yield split
+
+
 def main(args):
     before = after = target = None
     mailreader = ["mutt", "-f"]
     limit = 2000
+    thread = False
 
     base = os.path.expanduser("~/.mailpie")
 
     try:
-        opts, args = getopt.getopt(args, "o:pM:b:a:l:h?")
+        opts, args = getopt.getopt(args, "to:pM:b:a:l:h?")
     except getopt.GetoptError, detail:
         usage(detail)
 
@@ -47,17 +68,9 @@ def main(args):
             limit = int(v)
         elif k == "-a": after = parsedate(v)
         elif k == "-b": before = parsedate(v)
+        elif k == "-t": thread = True
 
     index = base + ".index"
-    swishargs = ['swish-e', '-H0', '-x<swishdocpath>\n',
-        '-f', index,
-        '-w', " ".join(args)]
-    if before or after:
-        if before is None: before = 0
-        if after is None: after = sys.maxint
-        swishargs.extend(["-L", "date", str(before), str(after)])
-
-    swish = subprocess.Popen(swishargs, stdout=subprocess.PIPE)
 
     if target is None:
         f = tempfile.NamedTemporaryFile()
@@ -67,12 +80,38 @@ def main(args):
         f = open(target, "w")
 
     count = 0
-    for filename in swish.stdout:
-        filename = filename.strip()
+    msgids = set()
+    hashes = set()
+
+    print >>sys.stderr, "main", repr(args)
+    for filename, irt, references in run_swish(index, args, before, after):
         path = os.path.join(base, filename[:2], filename[2:])
         f.write(open(path).read())
         count = count + 1
         if count == limit: break
+        if thread:
+            hashes.add(filename)
+            if irt: msgids.add(irt)
+            msgids.update(set(references.split()))
+
+    if thread:
+        visited = set(["(null)"])  # This hurts swish
+        while msgids and count < limit:
+            cmdline = []
+            while msgids and len(cmdline) < 5:
+                p = msgids.pop()
+                if p in visited: continue
+                visited.add(p)
+                cmdline.append("message-id=\"%s\"" % re.sub("[^a-z0-9]+", " ", p))
+            for filename, irt, references in run_swish(index, cmdline, before, after):
+                if filename in hashes: continue
+                path = os.path.join(base, filename[:2], filename[2:])
+                f.write(open(path).read())
+                count = count + 1
+                if count == limit: break
+                hashes.add(filename)
+                if irt: msgids.add(irt)
+                msgids.update(set(references.split()))
 
     if target is None:
         f.flush()
