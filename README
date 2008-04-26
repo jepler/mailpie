@@ -1,0 +1,52 @@
+mailpie - e-mail full text search
+
+
+REQUIREMENTS
+
+- python  (tested with python 2.4.3 and 2.5.2)
+- swish-e (tested with swish-e 2.4.3 and 2.4.5)
+
+mailpie is developed on Linux systems.
+
+
+INSTALLATION
+
+Site-wide installation:
+    $ sudo python setup.py install
+
+Personal installation:
+    $ python setup.py install --home=$HOME
+Make sure that $HOME/lib/python is on PYTHONPATH
+
+See distutils documentation for more installation options.
+
+
+USAGE
+
+To add a mailbox full of messages to the mailpie storage:
+    mailpie-add example.mbox
+
+To search for messages:
+    mailpie-search from=jepler
+Available search tags are:
+    subject from to cc bcc list-id message-id date header
+without a tag, the message headers and body are all searched.
+
+To rebuild the index from scratch (e.g., in case of an aborted
+mailpie-add):
+    mailpie-index
+
+For more information on commandline options, see mailpie-xxx --help.
+
+
+REMOVING MESSAGES
+
+There is no provision for removing messages from a mailpie storage area
+or from the index.
+
+
+TIPS
+
+Because swish-e can take a long time to merge two index files together,
+wait until you have many messages before running it.  For instance, use
+a cron job to add a full day's messages in a single operation.
