@@ -35,7 +35,7 @@ setup(name="mailpie", version="0.1",
     author="Jeff Epler", author_email = "jepler@unpythonic.net",
     packages=['mailpie'], package_dir={'mailpie': 'lib/mailpie'},
     scripts=['scripts/mailpie-add', 'scripts/mailpie-index', 'scripts/mailpie-search'],
-    url="http://emergent.unpy.net/software/aethertool/",
+    url="http://emergent.unpy.net/software/mailpie/",
     license="GPL",
 )
 # vim:sw=4:sts=4:et
