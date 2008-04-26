@@ -21,7 +21,7 @@ import sys, os, subprocess, shutil, getopt, tempfile, re
 sys.stdin.close()
 
 def usage(result=0):
-    print """mailpie-makebox: Put search results in a mailbox
+    print """mailpie-search: Put search results in a mailbox
 Usage: %s [-o file|-p|-m] [-b date] [-a date] [-M mailreader] terms...
     -B dir, --base=dir      Choose the base location of the mailpie storage
                             Default: $HOME/.mailpie

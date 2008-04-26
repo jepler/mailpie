@@ -26,6 +26,21 @@ import sys
 import tempfile
 import time
 
+def usage(result=0):
+    print """mailpie-add: Add messages to a mailpie storage area
+Usage: %s [-B dir] [-i|-n] [file ...]
+    -B dir, --base=dir  Choose base location of the mailpie storage.
+                        Default: $HOME/.mailpie
+
+    -i, --index         Add messages to the index (default)
+    -n, --no-index      Do not add messages to the index 
+
+    file:               Unix mailbox file(s) to add.
+                        Default: index mailbox on standard input
+""" % os.path.basename(sys.argv[0])
+    raise SystemExit, result
+
+
 def Open(f):
     if not isinstance(f, str): return f
     if f == "-": return sys.stdin
@@ -74,20 +89,6 @@ def store(base, content):
         if detail.errno != errno.EEXIST:
             raise os.error, detail
     return file, hash
-
-def usage(result=0):
-    print """mailpie-add: Add messages to a mailpie storage area
-Usage: %s [-B dir] [-i|-n] [file ...]
-    -B dir, --base=dir  Choose base location of the mailpie storage.
-                        Default: $HOME/.mailpie
-
-    -i, --index         Add messages to the index (default)
-    -n, --no-index      Do not add messages to the index 
-
-    file:               Unix mailbox file(s) to add.
-                        Default: index mailbox on standard input
-""" % os.path.basename(sys.argv[0])
-    raise SystemExit, result
 
 def add(base, mailbox, swish):
     count = 0
