@@ -1,5 +1,12 @@
 #!/usr/bin/python
-import sys, os, sha, getopt, errno, tempfile
+import errno
+import getopt
+import mailpie.swishfilter
+import os
+import sha
+import sys
+import tempfile
+import time
 
 def Open(f):
     if not isinstance(f, str): return f
@@ -33,7 +40,7 @@ def store(base, content):
     file = os.path.join(base, hash[:2], hash[2:])
     if os.path.exists(file):
         print >>sys.stderr, "Duplicate message with hash", hash
-        return
+        return file, hash
     make_dir_once(dir)
     fd, temp = tempfile.mkstemp(dir=dir)
     os.write(fd, content)
@@ -48,37 +55,60 @@ def store(base, content):
             pass
         if detail.errno != errno.EEXIST:
             raise os.error, detail
+    return file, hash
 
 def usage(result=0):
     print """mailpie-add: Add messages to a mailpie storage area
-Usage: %s [-B dir] [file ...]
+Usage: %s [-B dir] [-i|-n] [file ...]
         -B dir: The root directory of the mailpie storage  Default: ~/.mailpie
+
+        -i: Add messages to the index (default)
+        -n: Do not add messages to the index 
+
         file:   Unix mailbox file(s) to add.               Default: stdin
 """ % os.path.basename(sys.argv[0])
     raise SystemExit, result
 
-def add(base, mailbox):
+def add(base, mailbox, swish):
+    count = 0
     for message in split(mailbox):
+        count += 1
         message = "".join(message)
-        store(base, message)
+        filename, key = store(base, message)
+        if swish:
+            swish.do_one(filename, key, message)
+    return count
+
+def format_time(s):
+    if s < 60: return "%.1fs" % s
+    if s < 3600: return "%d:%02.1f" % (int(s/60), s%60)
+    return "%d:%02d:%02.1f" % (int(s/3600), int(s/60)%60, s%60)
 
 def main(args):
     try:
-        opts, args = getopt.getopt(args, "B:h?", ["--help"])
+        opts, args = getopt.getopt(args, "Bin:h?", ["--help", "--base=", "--index", "--no-index"])
     except getopt.GetoptError, detail:
         usage(detail)
 
     base = os.path.expanduser("~/.mailpie")
+    swish = True
 
     for k, v in opts:
         if k in ("-?", "-h", "--help"): usage(0)
         if k == "-B": base = v
 
+    if swish: swish = mailpie.swishfilter.Swish(base, True)
+
     args = args or ["-"]
+    count = 0
+    start = time.time()
     for filename in args:
         sys.stderr.write(filename)
-        add(base, filename)
+        count += add(base, filename, swish)
         sys.stderr.write("\n")
-
+    if swish:
+        swish.close()
+    end = time.time()
+    print >>sys.stderr, "Added %d messages in %s (%.1f messages/second)\n" % (count, format_time(end - start), count / (end-start))
 if __name__ == '__main__':
     main(sys.argv[1:])

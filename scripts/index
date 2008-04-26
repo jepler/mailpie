@@ -1,0 +1,62 @@
+#!/usr/bin/python
+import email.Message
+import email.Parser
+import getopt
+import mailpie.swishfilter
+import os
+import rfc822
+import string
+import subprocess
+import sys
+import tempfile
+import time
+
+def usage(result=0):
+    print """mailpie-index: Manually index messages
+Usage: %s [-B dir] [-i|-f|-t time]
+        -B dir, --base=dir
+            Set the  root directory of the mailpie storage
+            Default: ~/.mailpie
+
+        -s secs, --since=secs
+            Do not index files earlier than this time (time since unix epoch in
+            seconds)
+        -i, --incremental
+            Index only files newer than last run
+        -f, --full Index all files
+            Default: Index all files
+""" % os.path.basename(sys.argv[0])
+    raise SystemExit, result
+
+def main(args):
+    try:
+        opts, args = getopt.getopt(args, "B:s:ifh?",
+            ["--help", "--since=", "incremental", "full"])
+    except getopt.GetoptError, detail:
+        usage(detail)
+
+    base = os.path.expanduser("~/.mailpie")
+    since = 0
+
+    for k, v in opts:
+        if k in ("-?", "-h", "--help"): usage()
+        if k in ("-B", "--base"): base = v
+        if k in ("-s", "--since"): since = float(v)
+        if k in ("-i", "--incremental"): since = mailpie.swishfilter.Incremental
+        if k in ("-f", "--full"): since=0
+
+    swish = mailpie.swishfilter.Swish(base, since, time.time())
+
+    os.chdir(base)
+    dirs = ['%02x' % i for i in range(255)]
+    for dir in dirs:
+        print >>sys.stderr, "%5.1f complete" % (int(dir, 16) * 100. / 256)
+        if not os.path.exists(dir): continue
+        os.chdir(dir)
+        for file in os.listdir(os.path.curdir):
+            swish.do_one(file, dir+file)
+        os.chdir(os.path.pardir)
+    swish.close()
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
