@@ -1,0 +1,73 @@
+#!/usr/bin/python
+import sys, os, subprocess, shutil, getopt, tempfile
+sys.stdin.close()
+
+def usage(result=0):
+    print """mailpie-makebox: Put search results in a mailbox
+Usage: %s [-o file|-p|-m] [-b date] [-a date] [-M mailreader] terms...
+
+    -o file: Write result to file
+    -p:      Write result to stdout
+    -m:      Open mailbox in mailreader (default: mutt -f)
+
+    -b date: Only include messages before date
+    -a date: Only include messages after date
+""" % os.path.basename(sys.argv[0])
+
+def getoutput(cmdline):
+    p = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+    p.stdin.close()
+    return p.stdout.read()
+
+def parsedate(s):
+    return getoutput(["date", "-d%s" % s, "+%s"])
+
+def main(args):
+    before = after = target = None
+    mailreader = ["mutt", "-f"]
+
+    base = os.path.expanduser("~/.mailpie")
+
+    opts, args = getopt.getopt(args, "o:pM:b:a:h?")
+
+    for k, v in opts:
+        if k == "-o":
+            target = v
+        elif k == "-p":
+            target = "-"
+        elif k == "-m":
+            target = None
+        elif k == "-M":
+            mailreader = v.split()
+        elif k == "-a": after = parsedate(v)
+        elif k == "-b": before = parsedate(v)
+
+    index = base + ".index"
+    swishargs = ['swish-e', '-H0', '-x<swishdocpath>\n',
+        '-f', index,
+        '-w', " ".join(args)]
+    if before or after:
+        if before is None: before = 0
+        if after is None: after = sys.maxint
+        swishargs.extend(["-L", "date", str(before), str(after)])
+
+    swish = subprocess.Popen(swishargs, stdout=subprocess.PIPE)
+
+    if target is None:
+        f = tempfile.NamedTemporaryFile()
+    elif target == "-":
+        f = sys.stdout
+    else:
+        f = open(target, "w")
+
+    for filename in swish.stdout:
+        filename = filename.strip()
+        path = os.path.join(base, filename[:2], filename[2:])
+        f.write(open(path).read())
+
+    if target is None:
+        f.flush()
+        os.spawnvp(os.P_WAIT, mailreader[0], mailreader + [f.name])
+
+if __name__ == '__main__':
+    main(sys.argv[1:])

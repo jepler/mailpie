@@ -1,0 +1,81 @@
+#!/usr/bin/python
+import sys, os, sha, getopt, errno, tempfile
+
+def Open(f):
+    if not isinstance(f, str): return f
+    if f == "-": return sys.stdin
+    return open(f)
+
+def split(mbox):
+    mbox = Open(mbox)
+    result = []
+    for line in mbox:
+        if line.startswith("From "):
+            if result:
+                yield result
+            result = []
+        result.append(line)
+    if result:
+        yield result    
+
+def make_dir_once(dir, made=set()):
+    if dir in made: return
+    try:
+        os.makedirs(dir)
+    except os.error, detail:
+        if detail.errno != errno.EEXIST: raise os.error, detail
+    made.add(dir)
+
+def store(base, content):
+    hash = sha.new(content).hexdigest()
+    dir = os.path.join(base, hash[:2])
+    file = os.path.join(base, hash[:2], hash[2:])
+    if os.path.exists(file):
+        print >>sys.stderr, "Duplicate message with hash", hash
+        return
+    make_dir_once(dir)
+    fd, temp = tempfile.mkstemp(dir=dir)
+    os.write(fd, content)
+    os.close(fd)
+    try:
+        os.rename(temp, file)
+    except os.error, detail:
+        try:
+            os.unlink(temp)
+        except os.error:
+            print >>sys.stderr, "Failed to unlink temporary", temp
+            pass
+        if detail.errno != errno.EEXIST:
+            raise os.error, detail
+
+def usage(result=0):
+    print """mailpie-add: Add messages to a mailpie storage area
+Usage: %s [-b dir] [file ...]
+        -b dir: The root directory of the mailpie storage  Default: ~/mailpie
+        file:   Unix mailbox file(s) to add.               Default: stdin
+""" % os.path.basename(sys.argv[0])
+    raise SystemExit, result
+
+def add(base, mailbox):
+    for message in split(mailbox):
+        message = "".join(message)
+        store(base, message)
+
+def main(args):
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "b:h?", ["--help"])
+    except getopt.GetoptError, detail:
+        usage(detail)
+
+    base = os.path.expanduser("~/mailpie")
+
+    for k, v in opts:
+        if k in ("-?", "-h", "--help"): usage(0)
+        if k == "-b": base = v
+
+    args = args or ["-"]
+    for filename in args:
+        add(base, filename)
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
