@@ -1,4 +1,4 @@
-#!usr/bin/python
+#!/usr/bin/python
 # vim: set fileencoding=utf-8 : sts=4 : et : sw=4
 #    This is a component of mailpie, a full-text search for email
 #
@@ -23,13 +23,29 @@ sys.stdin.close()
 def usage(result=0):
     print """mailpie-makebox: Put search results in a mailbox
 Usage: %s [-o file|-p|-m] [-b date] [-a date] [-M mailreader] terms...
+    -B dir, --base=dir      Choose the base location of the mailpie storage
+                            Default: $HOME/.mailpie
 
-    -o file: Write result to file
-    -p:      Write result to stdout
-    -m:      Open mailbox in mailreader (default: mutt -f)
+Action:
+    -c,      --count        Write number of matches
+    -o FILE, --out=FILE     Write result to FILE
+    -p,      --stdout       Write result to stdout
+    -r,      --read:        Open mailbox in mailreader (default)
 
-    -b date: Only include messages before date
-    -a date: Only include messages after date
+    -M prog, --mailreader=PROG
+                            Mailreader to invoke (default: "mutt -R -f")
+
+Searching:
+    -b DATE, --before=DATE  Only include messages before DATE
+    -a DATE, --after=DATE   Only include messages after DATE
+                            Date formats are like "date -d=DATE"
+
+    -l NUM, --limit=NUM     Return no more than NUM
+
+    -t, --thread            Include full threads
+    -n, --no-thread         Include full threads
+
+    terms...                See SWISH-RUN(1) for details on search terms
 """ % os.path.basename(sys.argv[0])
     raise SystemExit, result
 
@@ -58,6 +74,7 @@ def run_swish(index, args, before=None, after=None):
         if len(split) != 3: raise ValueError, row
         yield split
 
+class Count: pass
 
 def main(args):
     before = after = target = None
@@ -68,24 +85,25 @@ def main(args):
     base = os.path.expanduser("~/.mailpie")
 
     try:
-        opts, args = getopt.getopt(args, "to:pM:b:a:l:h?")
+        opts, args = getopt.getopt(args, "co:prM:a:b:ltnh?",
+            ("count", "out=", "stdout", "read", "mailreader",
+             "help", "after", "before", "limit", "thread", "no-thread"))
     except getopt.GetoptError, detail:
         usage(detail)
 
     for k, v in opts:
-        if k == "-o":
-            target = v
-        elif k == "-p":
-            target = "-"
-        elif k == "-m":
-            target = None
-        elif k == "-M":
-            mailreader = v.split()
-        elif k == "-l":
-            limit = int(v)
-        elif k == "-a": after = parsedate(v)
-        elif k == "-b": before = parsedate(v)
-        elif k == "-t": thread = True
+        if k in ("-o", "--out"): target = v
+        elif k in ("-p", "--stdout"): target = "-"
+        elif k in ("-r", "--read"): target = None
+        elif k in ("-c", "--count"): target = Count
+        elif k in ("-M", "--mailreader"): mailreader = v.split()
+        elif k in ("-l", "--limit"): limit = int(v)
+        elif k in ("-a", "--after"): after = parsedate(v)
+        elif k in ("-b", "--before"): before = parsedate(v)
+        elif k in ("-t", "--thread"): thread = True
+        elif k in ("-n", "--no-thread"): thread = False
+        elif k in ("-l", "--limit"): limit = int(v)
+        elif k in ("--help", "-h", "-?"): usage()
 
     index = base + ".index"
 
@@ -93,6 +111,8 @@ def main(args):
         f = tempfile.NamedTemporaryFile()
     elif target == "-":
         f = sys.stdout
+    elif target is Count:
+        f = None
     else:
         f = open(target, "w")
 
@@ -112,7 +132,7 @@ def main(args):
     args = [q(arg) for arg in args]
     for filename, irt, references in run_swish(index, args, before, after):
         path = os.path.join(base, filename[:2], filename[2:])
-        f.write(open(path).read())
+        if f: f.write(open(path).read())
         count = count + 1
         if count == limit: break
         if thread:
@@ -132,7 +152,7 @@ def main(args):
             for filename, irt, references in run_swish(index, cmdline, before, after):
                 if filename in hashes: continue
                 path = os.path.join(base, filename[:2], filename[2:])
-                f.write(open(path).read())
+                if f: f.write(open(path).read())
                 count = count + 1
                 if count == limit: break
                 hashes.add(filename)
@@ -143,5 +163,7 @@ def main(args):
         f.flush()
         os.spawnvp(os.P_WAIT, mailreader[0], mailreader + [f.name])
 
+    if target is Count:
+        print count
 if __name__ == '__main__':
     main(sys.argv[1:])

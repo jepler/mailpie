@@ -32,24 +32,20 @@ import time
 def usage(result=0):
     print """mailpie-index: Manually index messages
 Usage: %s [-B dir] [-i|-f|-t time]
-        -B dir, --base=dir
-            Set the  root directory of the mailpie storage
-            Default: ~/.mailpie
+    -B dir, --base=dir      Choose the base location of the mailpie storage
+                            Default: $HOME/.mailpie
 
-        -s secs, --since=secs
-            Do not index files earlier than this time (time since unix epoch in
-            seconds)
-        -i, --incremental
-            Index only files newer than last run
-        -f, --full Index all files
-            Default: Index all files
+    -s secs, --since=secs   Do not index files earlier than this time (time
+                            since unix epoch in seconds)
+    -i, --incremental       Index only files newer than last run
+    -f, --full              Index all files (default)
 """ % os.path.basename(sys.argv[0])
     raise SystemExit, result
 
 def main(args):
     try:
         opts, args = getopt.getopt(args, "B:s:ifh?",
-            ["--help", "--since=", "incremental", "full"])
+            ["help", "since=", "incremental", "full"])
     except getopt.GetoptError, detail:
         usage(detail)
 

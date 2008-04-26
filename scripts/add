@@ -78,12 +78,14 @@ def store(base, content):
 def usage(result=0):
     print """mailpie-add: Add messages to a mailpie storage area
 Usage: %s [-B dir] [-i|-n] [file ...]
-        -B dir: The root directory of the mailpie storage  Default: ~/.mailpie
+    -B dir, --base=dir  Choose base location of the mailpie storage.
+                        Default: $HOME/.mailpie
 
-        -i: Add messages to the index (default)
-        -n: Do not add messages to the index 
+    -i, --index         Add messages to the index (default)
+    -n, --no-index      Do not add messages to the index 
 
-        file:   Unix mailbox file(s) to add.               Default: stdin
+    file:               Unix mailbox file(s) to add.
+                        Default: index mailbox on standard input
 """ % os.path.basename(sys.argv[0])
     raise SystemExit, result
 
@@ -104,7 +106,7 @@ def format_time(s):
 
 def main(args):
     try:
-        opts, args = getopt.getopt(args, "Bin:h?", ["--help", "--base=", "--index", "--no-index"])
+        opts, args = getopt.getopt(args, "Bin:h?", ["help", "base=", "index", "no-index"])
     except getopt.GetoptError, detail:
         usage(detail)
 
@@ -113,7 +115,9 @@ def main(args):
 
     for k, v in opts:
         if k in ("-?", "-h", "--help"): usage(0)
-        if k == "-B": base = v
+        if k in ("-B", "--base"): base = v
+        if k in ("-n", "--no-index"): swish = False
+        if k in ("-i", "--index"): swish = True
 
     if swish: swish = mailpie.swishfilter.Swish(base, True)
 
