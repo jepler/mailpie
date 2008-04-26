@@ -83,7 +83,17 @@ def main(args):
     msgids = set()
     hashes = set()
 
+    def q(arg):
+        if not " " in arg: return arg
+
+        if "=" in arg:
+            a, b = arg.split("=", 1)
+            return '%s="%s"' % (a,b)
+
+        return '"%s"' % arg
+
     print >>sys.stderr, "main", repr(args)
+    args = [q(arg) for arg in args]
     for filename, irt, references in run_swish(index, args, before, after):
         path = os.path.join(base, filename[:2], filename[2:])
         f.write(open(path).read())
