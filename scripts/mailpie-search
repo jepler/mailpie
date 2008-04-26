@@ -85,7 +85,7 @@ def main(args):
     base = os.path.expanduser("~/.mailpie")
 
     try:
-        opts, args = getopt.getopt(args, "co:prM:a:b:ltnh?",
+        opts, args = getopt.getopt(args, "co:prM:a:b:l:tnh?",
             ("count", "out=", "stdout", "read", "mailreader",
              "help", "after", "before", "limit", "thread", "no-thread"))
     except getopt.GetoptError, detail:
