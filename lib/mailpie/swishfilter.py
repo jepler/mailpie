@@ -32,7 +32,7 @@ IndexFile %s
 MetaNames subject from to cc bcc list-id message-id date
 PropertyNames in-reply-to references
 PropertyNamesDate date
-MaxWordLimit 999
+MaxWordLimit 59
 """
 
 parser = email.Parser.Parser()
