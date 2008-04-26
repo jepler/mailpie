@@ -44,7 +44,7 @@ def run_swish(index, args, before=None, after=None):
 
 def main(args):
     before = after = target = None
-    mailreader = ["mutt", "-f"]
+    mailreader = ["mutt", "-R", "-f"]
     limit = 2000
     thread = False
 
