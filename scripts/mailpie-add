@@ -102,8 +102,8 @@ def add(base, mailbox, swish):
 
 def format_time(s):
     if s < 60: return "%.1fs" % s
-    if s < 3600: return "%d:%02.1f" % (int(s/60), s%60)
-    return "%d:%02d:%02.1f" % (int(s/3600), int(s/60)%60, s%60)
+    if s < 3600: return "%d:%04.1f" % (int(s/60), s%60)
+    return "%d:%02d:%04.1f" % (int(s/3600), int(s/60)%60, s%60)
 
 def main(args):
     try:
