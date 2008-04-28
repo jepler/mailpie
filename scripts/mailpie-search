@@ -17,7 +17,7 @@
 #    along with this program; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-import sys, os, subprocess, shutil, getopt, tempfile, re
+import sys, os, subprocess, shutil, getopt, tempfile, re, shlex
 sys.stdin.close()
 
 def usage(result=0):
@@ -96,7 +96,7 @@ def main(args):
         elif k in ("-p", "--stdout"): target = "-"
         elif k in ("-r", "--read"): target = None
         elif k in ("-c", "--count"): target = Count
-        elif k in ("-M", "--mailreader"): mailreader = v.split()
+        elif k in ("-M", "--mailreader"): mailreader = shlex.split(v)
         elif k in ("-l", "--limit"): limit = int(v)
         elif k in ("-a", "--after"): after = parsedate(v)
         elif k in ("-b", "--before"): before = parsedate(v)
@@ -108,7 +108,7 @@ def main(args):
     index = base + ".index"
 
     if target is None:
-        f = tempfile.NamedTemporaryFile()
+        f = tempfile.NamedTemporaryFile(prefix="mailpie", suffix=".mbox")
     elif target == "-":
         f = sys.stdout
     elif target is Count:
