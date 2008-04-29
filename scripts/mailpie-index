@@ -21,6 +21,7 @@ import email.Message
 import email.Parser
 import getopt
 import mailpie.swishfilter
+import mailpie.parsedate
 import os
 import rfc822
 import string
@@ -35,12 +36,12 @@ Usage: %s [-B dir] [-s secs|-i|-f|-m]
     -B dir, --base=dir      Choose the base location of the mailpie storage
                             Default: $HOME/.mailpie
 
-    -s secs, --since=secs   Do not index messages added before this time (time
-                            since unix epoch in seconds)
+    -s DATE, --since=DATE   Do not index messages added before this time
+                            Date formats are like "date -d=DATE"
     -i, --incremental       Index only messages added since last run
     -f, --full              Index all messages (default)
 
-    -m, --merge-recent      Merge index of recent messages with long-term index
+    -m, --merge             Merge index of recent messages with long-term index
                             (typically used with --incremental)
 """ % os.path.basename(sys.argv[0])
     raise SystemExit, result
@@ -59,7 +60,7 @@ def main(args):
     for k, v in opts:
         if k in ("-?", "-h", "--help"): usage()
         if k in ("-B", "--base"): base = v
-        if k in ("-s", "--since"): since = float(v)
+        if k in ("-s", "--since"): since = mailpie.parsedate.parsedate(v)
         if k in ("-i", "--incremental"): since = mailpie.swishfilter.Incremental
         if k in ("-f", "--full"): since=0
         if k in ("-m", "--merge"): merge = True
