@@ -18,6 +18,7 @@
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import sys, os, subprocess, shutil, getopt, tempfile, re, shlex
+import mailpie.swishfilter, mailpie.parsedate
 sys.stdin.close()
 
 def usage(result=0):
@@ -49,24 +50,16 @@ Searching:
 """ % os.path.basename(sys.argv[0])
     raise SystemExit, result
 
-def getoutput(cmdline):
-    p = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-    p.stdin.close()
-    return p.stdout.read()
-
-def parsedate(s):
-    return getoutput(["date", "-d%s" % s, "+%s"])
-
-def run_swish(index, args, before=None, after=None):
+def run_swish(indexes, args, before=None, after=None):
     if not args:
         return
-    swishargs = ['swish-e', '-H0', '-x<swishdocpath>\t<in-reply-to>\t<references>\n',
-        '-f', index,
-        '-w', " ".join(args)]
+    swishargs = ['swish-e', '-H0',
+        '-x<swishdocpath>\t<in-reply-to>\t<references>\n',
+        '-w', " ".join(args)] + ['-f%s' % f for f in indexes]
     if before or after:
-        if before is None: before = 0
-        if after is None: after = sys.maxint
-        swishargs.extend(["-L", "date", str(before), str(after)])
+        if before is None: before = sys.maxint
+        if after is None: after = 0
+        swishargs.extend(["-L", "date", str(after), str(before)])
 
     swish = subprocess.Popen(swishargs, stdout=subprocess.PIPE)
     for row in swish.stdout:
@@ -98,14 +91,14 @@ def main(args):
         elif k in ("-c", "--count"): target = Count
         elif k in ("-M", "--mailreader"): mailreader = shlex.split(v)
         elif k in ("-l", "--limit"): limit = int(v)
-        elif k in ("-a", "--after"): after = parsedate(v)
-        elif k in ("-b", "--before"): before = parsedate(v)
+        elif k in ("-a", "--after"): after = mailpie.parsedate.parsedate(v)
+        elif k in ("-b", "--before"): before = mailpie.parsedate.parsedate(v)
         elif k in ("-t", "--thread"): thread = True
         elif k in ("-n", "--no-thread"): thread = False
         elif k in ("-l", "--limit"): limit = int(v)
         elif k in ("--help", "-h", "-?"): usage()
 
-    index = base + ".index"
+    indexes = mailpie.swishfilter.get_index_files(base)
 
     if target is None:
         f = tempfile.NamedTemporaryFile(prefix="mailpie", suffix=".mbox")
@@ -130,7 +123,7 @@ def main(args):
         return '"%s"' % arg
 
     args = [q(arg) for arg in args]
-    for filename, irt, references in run_swish(index, args, before, after):
+    for filename, irt, references in run_swish(indexes, args, before, after):
         path = os.path.join(base, filename[:2], filename[2:])
         if f: f.write(open(path).read())
         count = count + 1
@@ -149,7 +142,7 @@ def main(args):
                 if p in visited: continue
                 visited.add(p)
                 cmdline.append("message-id=\"%s\"" % re.sub("[^a-z0-9]+", " ", p))
-            for filename, irt, references in run_swish(index, cmdline, before, after):
+            for filename, irt, references in run_swish(indexes, cmdline, before, after):
                 if filename in hashes: continue
                 path = os.path.join(base, filename[:2], filename[2:])
                 if f: f.write(open(path).read())

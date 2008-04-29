@@ -31,7 +31,7 @@ import time
 
 def usage(result=0):
     print """mailpie-index: Manually index messages
-Usage: %s [-B dir] [-i|-f|-t time]
+Usage: %s [-B dir] [-s secs|-i|-f|-m]
     -B dir, --base=dir      Choose the base location of the mailpie storage
                             Default: $HOME/.mailpie
 
@@ -39,18 +39,21 @@ Usage: %s [-B dir] [-i|-f|-t time]
                             since unix epoch in seconds)
     -i, --incremental       Index only files newer than last run
     -f, --full              Index all files (default)
+
+    -m, --merge-recent      Merge index of recent files with long-termindex
 """ % os.path.basename(sys.argv[0])
     raise SystemExit, result
 
 def main(args):
     try:
-        opts, args = getopt.getopt(args, "B:s:ifh?",
+        opts, args = getopt.getopt(args, "B:s:ifmh?",
             ["help", "since=", "incremental", "full"])
     except getopt.GetoptError, detail:
         usage(detail)
 
     base = os.path.expanduser("~/.mailpie")
     since = 0
+    merge = False
 
     for k, v in opts:
         if k in ("-?", "-h", "--help"): usage()
@@ -58,6 +61,7 @@ def main(args):
         if k in ("-s", "--since"): since = float(v)
         if k in ("-i", "--incremental"): since = mailpie.swishfilter.Incremental
         if k in ("-f", "--full"): since=0
+        if k in ("-m", "--merge"): merge = True
 
     swish = mailpie.swishfilter.Swish(base, since, time.time())
 
@@ -71,6 +75,9 @@ def main(args):
             swish.do_one(file, dir+file)
         os.chdir(os.path.pardir)
     swish.close()
+
+    if merge:
+        swish.merge()
 
 if __name__ == '__main__':
     main(sys.argv[1:])

@@ -37,6 +37,39 @@ MaxWordLimit 59
 
 parser = email.Parser.Parser()
 
+def _get_index_files(base):
+    return [base + ".index", base + ".index.recent"]
+
+def get_index_files(base, all=False):
+    return [path for path in _get_index_files(base) if all or os.path.exists(path)]
+
+def index_exists(name):
+    return os.path.exists(name)
+
+def rename_index(old, new):
+    print "rename_index", old, new
+    os.rename(old, new)
+    os.rename(old + ".prop", new + ".prop")
+
+def unlink_index(name):
+    os.unlink(name)
+    os.unlink(name + ".prop")
+
+def merge_index(target, additional):
+    exists = os.path.exists(target)
+    print "merge_index", target, additional, exists
+    if not exists and len(additional) == 1:
+        rename_index(additional[0], target)
+        return
+
+    merge = target + ".merge"
+    swish_args = ['swish-e', '-M']
+    if exists: swish_args += [target]
+    swish_args += additional + [merge]
+    os.spawnvp(os.P_WAIT, 'swish-e', swish_args)
+    rename_index(merge, target)
+    for index in additional: unlink_index(index)
+
 class LockError(RuntimeError): pass
 
 class Lock:
@@ -121,7 +154,7 @@ date_fields = set(['date'])
 def do_one(since, filename, key, data=None, dest=sys.stdout):
     mtime = os.stat(filename).st_mtime
     if since:
-        if mtime < since: return
+        if mtime < since: return False
     if data:
         m = parser.parsestr(data)
     else:
@@ -138,6 +171,7 @@ def do_one(since, filename, key, data=None, dest=sys.stdout):
     result.append(get_payload(m))
     result.append('</body></message>')
     write_one(key, mtime, "".join(result), dest)
+    return True
 
 class Incremental: pass
 
@@ -155,9 +189,9 @@ class Swish:
         self.swishconfig.write(swishconfig_template % self.subfile("index"))
         self.swishconfig.flush()
         swishargs = ['swish-e', '-S', 'prog', '-i', 'stdin', '-c', self.swishconfig.name]
-        if not os.path.exists(self.subfile("index")): self.since=0
         if self.since: swishargs.extend(['-f', self.subfile("incremental")])
         self.swish = subprocess.Popen(swishargs, stdin=subprocess.PIPE)
+        self.no_op = True
 
     def subfile(self, ext): return self.base + "." + ext
     def lastfile(self): return self.subfile("last")
@@ -165,15 +199,17 @@ class Swish:
     def close(self):
         self.swish.stdin.close()
         result = self.swish.wait()
-        if result != 0: raise RuntimeError, "swish-e exited with code %d" % result
-        if self.since:
-            os.spawnvp(os.P_WAIT, 'swish-e', ['swish-e', '-M', self.subfile("index"), self.subfile("incremental"), self.subfile("merge")])
-            os.rename(self.subfile("merge"), self.subfile("index"))
-            os.rename(self.subfile("merge.prop"), self.subfile("index.prop"))
-            os.unlink(self.subfile("incremental"))
-            os.unlink(self.subfile("incremental.prop"))
+        if not self.no_op:
+            if result != 0: raise RuntimeError, "swish-e exited with code %d" % result
+            if self.since:
+                merge_index(self.subfile("index.recent"), [self.subfile("incremental")])
         if self.start:
             open(self.lastfile(), "w").write(str(self.start))
 
+    def merge(self):
+        if index_exists(self.subfile("index.recent")):
+            merge_index(self.subfile("index"), [self.subfile("index.recent")])
+
     def do_one(self, filename, key, data=None):
-        do_one(self.since, filename, key, data, self.swish.stdin)
+        if do_one(self.since, filename, key, data, self.swish.stdin):
+            self.no_op = False
