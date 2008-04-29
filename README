@@ -56,9 +56,11 @@ For more information on commandline options, see mailpie-xxx --help.
 TIPS
 
 Because swish-e can take a long time to merge two index files together,
-wait until you have many messages before running mailpie-add.  For
-instance, use a cron job to add a full day's messages in a single
-operation.
+mailpie uses a two-level index system.  mailpie-add puts new messages in
+"index.recent".  When this index grows large enough that the merge operation
+becomes slow, run "mailpie-index -im" to merge "index.recent" into the main
+index (this may take quite a long time).  After that, mailpie-add will be fast
+again.
 
 
 PRINCIPLE
