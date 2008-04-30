@@ -108,6 +108,20 @@ BUGS
    or from the index.
 
 
+RELEASE HISTORY
+
+v0.2:
+ * mailpie-add: improve speed of by introducing two levels of index
+ * mailpie-add: fix time report when there are zero tens-of-seconds
+ * mailpie-search: -l, --after=, --before=, and --limit=  to take arguments
+ * mailpie-search: improve -N flag to configure mailreader
+ * mailpie-index: add --merge action
+ * all: improve usage messages
+ * all: improve progress reporting
+
+v0.1:
+ * Initial release
+
 COPYRIGHT
 
 Copyright © 2008 Jeff Epler <jepler@unpythonic.net>
