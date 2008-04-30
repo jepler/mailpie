@@ -20,6 +20,7 @@
 import errno
 import getopt
 import mailpie.swishfilter
+import mailpie.log
 import os
 import sha
 import sys
@@ -72,7 +73,7 @@ def store(base, content):
     dir = os.path.join(base, hash[:2])
     file = os.path.join(base, hash[:2], hash[2:])
     if os.path.exists(file):
-        print >>sys.stderr, "Duplicate message with hash", hash
+        mailpie.log.log("Duplicate message with hash", hash)
         return file, hash
     make_dir_once(dir)
     fd, temp = tempfile.mkstemp(dir=dir)
@@ -84,8 +85,7 @@ def store(base, content):
         try:
             os.unlink(temp)
         except os.error:
-            print >>sys.stderr, "Failed to unlink temporary", temp
-            pass
+            mailpie.log.log("Failed to unlink temporary", temp)
         if detail.errno != errno.EEXIST:
             raise os.error, detail
     return file, hash
@@ -134,6 +134,7 @@ def main(args):
         if swish:
             swish.close()
     end = time.time()
-    print >>sys.stderr, "Added %d messages in %s (%.1f messages/second)\n" % (count, format_time(end - start), count / (end-start))
+    mailpie.log.progress("Added %d messages in %s (%.1f messages/second)\n",
+                        count, format_time(end - start), count / (end-start))
 if __name__ == '__main__':
     main(sys.argv[1:])

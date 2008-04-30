@@ -22,6 +22,7 @@ import email.Parser
 import getopt
 import mailpie.swishfilter
 import mailpie.parsedate
+import mailpie.log
 import os
 import rfc822
 import string
@@ -70,7 +71,7 @@ def main(args):
     os.chdir(base)
     dirs = ['%02x' % i for i in range(255)]
     for dir in dirs:
-        print >>sys.stderr, "%5.1f%% complete" % (int(dir, 16) * 100. / 256)
+        mailpie.log.progress("%5.1f%% complete", int(dir, 16) * 100. / 256)
         if not os.path.exists(dir): continue
         os.chdir(dir)
         for file in os.listdir(os.path.curdir):

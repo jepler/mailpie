@@ -25,6 +25,7 @@ import subprocess
 import sys
 import tempfile
 import rfc822
+import mailpie.log
 
 swishconfig_template = """
 DefaultContents XML*
@@ -125,7 +126,7 @@ def get_payload(m):
     payload = m.get_payload()
     encoding = m.get_content_charset()
     if payload is None:
-        print >>sys.stderr, "Payload is None in", m, repr(m._payload)[:20]
+        mailpie.log.log("Payload is None in %s [%s]", m, repr(m._payload)[:20])
         return ''
     if isinstance(payload, basestring):
         if m.get_content_maintype() not in ("text", None): return ""
@@ -135,7 +136,7 @@ def get_payload(m):
     result = []
     for p in payload:
         if not isinstance(p, email.Message.Message):
-            print >>sys.stderr, "Unexpected payload item", p.__class__.__name__
+            mailpie.log.log("Unexpected payload item %s", p.__class__.__name__)
             continue
         result.append("<attachment>")
         result.append(get_payload(p))
@@ -146,7 +147,7 @@ def parse_date(s):
     try:
         return str(int(rfc822.mktime_tz(rfc822.parsedate_tz(s))))
     except:
-        print >>sys.stderr, "parse_date failed:", repr(s)[:50]
+        mailpie.log.log("parse_date failed: %s", repr(s)[:50])
         return str(0)
 
 date_fields = set(['date'])
