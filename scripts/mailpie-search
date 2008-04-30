@@ -80,7 +80,7 @@ def main(args):
     try:
         opts, args = getopt.getopt(args, "co:prM:a:b:l:tnh?",
             ("count", "out=", "stdout", "read", "mailreader",
-             "help", "after", "before", "limit", "thread", "no-thread"))
+             "help", "after=", "before=", "limit=", "thread", "no-thread"))
     except getopt.GetoptError, detail:
         usage(detail)
 
