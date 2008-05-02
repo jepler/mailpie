@@ -30,7 +30,7 @@ def progress(message, *args):
 def log(message, *args):
     if args: message = message % args
     progress_clear()
-    sys.stderr.write(mesasge + "\n");
+    sys.stderr.write(message + "\n");
     sys.stderr.flush()
     
 def progress_clear():
