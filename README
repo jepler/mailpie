@@ -110,6 +110,9 @@ BUGS
 
 RELEASE HISTORY
 
+v0.3:
+ * mailpie-add: fix typo that caused it to error at the end
+
 v0.2:
  * mailpie-add: improve speed of by introducing two levels of index
  * mailpie-add: fix time report when there are zero tens-of-seconds
