@@ -1,0 +1,73 @@
+#!/usr/bin/python
+# vim: set fileencoding=utf-8 : sts=4 : et : sw=4
+#    This is a component of mailpie, a full-text search for email
+#
+#    Copyright © 2008 Jeff Epler <jepler@unpythonic.net>
+#    This program is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; either version 2 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, write to the Free Software
+#    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+import getopt
+import mailpie.swishfilter
+import mailpie.log
+import os
+import sys
+
+def usage(result=0):
+    print """mailpie-admin: Perform mailpie database administration
+Usage: %s [-B dir] [-s]
+    -B dir, --base=dir  Choose base location of the mailpie storage.
+                        Default: $HOME/.mailpie
+
+Action:
+    -s, --statistics        Show statistics about the mailpie database
+""" % sys.argv[0]
+    raise SystemExit, result
+
+def count(base):
+    result = 0
+    for dirpath, dirnames, filenames in os.walk(base):
+        mailpie.log.progress(dirpath)
+        result += len(filenames)
+    return result
+
+def remove(base, hash):
+    path = os.path.join(base, hash[:2], hash[2:])
+    try:
+        os.unlink(path)
+    except os.error, detail:
+        print "%s: %s" % (path, detail)
+
+NO_OPERATION, STATISTICS = range(2)
+def main(args):
+    try:
+        opts, args = getopt.getopt(args, "sb:", ["statistics", "base="])
+    except getopt.error, detail:
+        usage(detail)
+
+    BASE = os.path.expanduser("~/.mailpie")
+    operation = NO_OPERATION
+
+    for k, v in opts:
+        if k == "-s" or k == "--statistics":
+            operation = STATISTICS
+        if k == "-b" or k == "-base":
+            BASE = v
+
+    if operation == STATISTICS:
+        mailpie.log.log("Messages in database: %6d", count(BASE))
+    else:
+        usage("Must specify an action") 
+
+if __name__ == '__main__':
+    main(sys.argv[1:])

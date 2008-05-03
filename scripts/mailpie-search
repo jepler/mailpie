@@ -33,6 +33,8 @@ Action:
     -p,      --stdout       Write result to stdout
     -r,      --read:        Open mailbox in mailreader (default)
 
+    -i,      --show-ids     Show the mailpie message ID in a header
+
     -M prog, --mailreader=PROG
                             Mailreader to invoke (default: "mutt -R -f")
 
@@ -69,18 +71,30 @@ def run_swish(indexes, args, before=None, after=None):
 
 class Count: pass
 
+def copymail(path, f, show_ids):
+    if not f: return
+    i = open(path)
+    printed = False
+    for line in i:
+        if show_ids and (not printed) and (line == "\n" or line == "\r\n"):
+            f.write("X-Mailpie-ID: %s\n" % path.replace("/", "")[-40:])
+            printed = True
+        f.write(line)
+
 def main(args):
     before = after = target = None
     mailreader = ["mutt", "-R", "-f"]
     limit = 2000
     thread = False
+    show_ids = False
 
     base = os.path.expanduser("~/.mailpie")
 
     try:
-        opts, args = getopt.getopt(args, "co:prM:a:b:l:tnh?",
+        opts, args = getopt.getopt(args, "co:prM:a:b:l:tnih?",
             ("count", "out=", "stdout", "read", "mailreader",
-             "help", "after=", "before=", "limit=", "thread", "no-thread"))
+             "help", "after=", "before=", "limit=", "thread", "no-thread",
+             "show-ids"))
     except getopt.GetoptError, detail:
         usage(detail)
 
@@ -96,6 +110,7 @@ def main(args):
         elif k in ("-t", "--thread"): thread = True
         elif k in ("-n", "--no-thread"): thread = False
         elif k in ("-l", "--limit"): limit = int(v)
+        elif k in ("-i", "--show-ids"): show_ids = True
         elif k in ("--help", "-h", "-?"): usage()
 
     indexes = mailpie.swishfilter.get_index_files(base)
@@ -125,7 +140,7 @@ def main(args):
     args = [q(arg) for arg in args]
     for filename, irt, references in run_swish(indexes, args, before, after):
         path = os.path.join(base, filename[:2], filename[2:])
-        if f: f.write(open(path).read())
+        copymail(path, f, show_ids)
         count = count + 1
         if count == limit: break
         if thread:
@@ -145,7 +160,7 @@ def main(args):
             for filename, irt, references in run_swish(indexes, cmdline, before, after):
                 if filename in hashes: continue
                 path = os.path.join(base, filename[:2], filename[2:])
-                if f: f.write(open(path).read())
+                copymail(path, f, show_ids)
                 count = count + 1
                 if count == limit: break
                 hashes.add(filename)
