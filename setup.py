@@ -31,7 +31,7 @@ def require_program(s):
 
 for p in ["swish-e"]: require_program(p)
 
-setup(name="mailpie", version="0.1",
+setup(name="mailpie", version="0.3",
     author="Jeff Epler", author_email = "jepler@unpythonic.net",
     packages=['mailpie'], package_dir={'mailpie': 'lib/mailpie'},
     scripts=['scripts/mailpie-add', 'scripts/mailpie-index', 'scripts/mailpie-search'],
