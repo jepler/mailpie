@@ -18,8 +18,8 @@
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import sys, os, subprocess, shutil, getopt, tempfile, re, shlex
-import mailpie.swishfilter, mailpie.parsedate
-sys.stdin.close()
+import mailpie.swishfilter, mailpie.parsedate, mailpie.log
+import bsddb
 
 def usage(result=0):
     print """mailpie-search: Put search results in a mailbox
@@ -56,7 +56,7 @@ def run_swish(indexes, args, before=None, after=None):
     if not args:
         return
     swishargs = ['swish-e', '-H0',
-        '-x<swishdocpath>\t<in-reply-to>\t<references>\n',
+        '-x<swishdocpath>\n',
         '-w', " ".join(args)] + ['-f%s' % f for f in indexes]
     if before or after:
         if before is None: before = sys.maxint
@@ -64,15 +64,13 @@ def run_swish(indexes, args, before=None, after=None):
         swishargs.extend(["-L", "date", str(after), str(before)])
 
     swish = subprocess.Popen(swishargs, stdout=subprocess.PIPE)
-    for row in swish.stdout:
-        split = row.rstrip("\n").split("\t")
-        if len(split) != 3: raise ValueError, row
-        yield split
+    for row in swish.stdout: yield row.strip("\n")
 
 class Count: pass
 
 def copymail(path, f, show_ids):
-    if not f: return
+    if not os.path.exists(path): return 0
+    if not f: return 1
     i = open(path)
     printed = False
     for line in i:
@@ -80,6 +78,7 @@ def copymail(path, f, show_ids):
             f.write("X-Mailpie-ID: %s\n" % path.replace("/", "")[-40:])
             printed = True
         f.write(line)
+    return 1
 
 def main(args):
     before = after = target = None
@@ -91,8 +90,8 @@ def main(args):
     base = os.path.expanduser("~/.mailpie")
 
     try:
-        opts, args = getopt.getopt(args, "co:prM:a:b:l:tnih?",
-            ("count", "out=", "stdout", "read", "mailreader",
+        opts, args = getopt.getopt(args, "B:co:prM:a:b:l:tnih?",
+            ("base=", "count", "out=", "stdout", "read", "mailreader",
              "help", "after=", "before=", "limit=", "thread", "no-thread",
              "show-ids"))
     except getopt.GetoptError, detail:
@@ -100,6 +99,7 @@ def main(args):
 
     for k, v in opts:
         if k in ("-o", "--out"): target = v
+        if k in ("-B", "--base"): base = v
         elif k in ("-p", "--stdout"): target = "-"
         elif k in ("-r", "--read"): target = None
         elif k in ("-c", "--count"): target = Count
@@ -126,7 +126,6 @@ def main(args):
 
     count = 0
     msgids = set()
-    hashes = set()
 
     def q(arg):
         if not " " in arg: return arg
@@ -137,37 +136,38 @@ def main(args):
 
         return '"%s"' % arg
 
+    if thread:
+        thread_db = bsddb.hashopen(base + ".thread.db", "r")
+
     args = [q(arg) for arg in args]
-    for filename, irt, references in run_swish(indexes, args, before, after):
-        path = os.path.join(base, filename[:2], filename[2:])
-        copymail(path, f, show_ids)
-        count = count + 1
+    for hash in run_swish(indexes, args, before, after):
+        path = os.path.join(base, hash[:2], hash[2:])
+        count += copymail(path, f, show_ids)
         if count == limit: break
         if thread:
-            hashes.add(filename)
-            if irt: msgids.add(irt)
-            msgids.update(set(references.split()))
+            msgids.add(thread_db.get("h:" + hash))
 
     if thread:
-        visited = set(["(null)"])  # This hurts swish
+        printed = set(msgids)
+        visited = set()
         while msgids and count < limit:
-            cmdline = []
-            while msgids and len(cmdline) < 5:
-                p = msgids.pop()
-                if p in visited: continue
-                visited.add(p)
-                cmdline.append("message-id=\"%s\"" % re.sub("[^a-z0-9]+", " ", p))
-            for filename, irt, references in run_swish(indexes, cmdline, before, after):
-                if filename in hashes: continue
-                path = os.path.join(base, filename[:2], filename[2:])
-                copymail(path, f, show_ids)
-                count = count + 1
-                if count == limit: break
-                hashes.add(filename)
-                if irt: msgids.add(irt)
-                msgids.update(set(references.split()))
+            msgid = msgids.pop()
+            mailpie.log.progress("Chasing: %s and %d more", msgid, len(msgids))
+            if msgid in visited: continue
+            visited.add(msgid)
+            th = set(thread_db.get("t:" + msgid, "").split()) - printed
+            msgids.update(th)
+            if not msgid in printed:
+                hash = thread_db.get('m:' + msgid)
+                if hash is None: continue
+                path = os.path.join(base, hash[:2], hash[2:])
+                count += copymail(path, f, show_ids)
+    mailpie.log.progress_clear()
 
-    if target is None:
+    if count == 0:
+        mailpie.log.log("No match")
+
+    if count and target is None:
         f.flush()
         os.spawnvp(os.P_WAIT, mailreader[0], mailreader + [f.name])
 

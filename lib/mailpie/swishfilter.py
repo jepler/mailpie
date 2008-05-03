@@ -24,16 +24,16 @@ import string
 import subprocess
 import sys
 import tempfile
+import time
 import rfc822
 import mailpie.log
+import mailpie.threaddb
 
 swishconfig_template = """
 DefaultContents XML*
 IndexFile %s
-MetaNames subject from to cc bcc list-id message-id date
-PropertyNames in-reply-to references
+MetaNames header subject from to cc bcc list-id date
 PropertyNamesDate date
-MaxWordLimit 59
 """
 
 parser = email.Parser.Parser()
@@ -152,7 +152,7 @@ def parse_date(s):
 
 date_fields = set(['date'])
 
-def do_one(since, filename, key, data=None, dest=sys.stdout):
+def do_one(since, filename, key, thread_db, data=None, dest=sys.stdout):
     mtime = os.stat(filename).st_mtime
     if since:
         if mtime < since: return False
@@ -172,6 +172,9 @@ def do_one(since, filename, key, data=None, dest=sys.stdout):
     result.append(get_payload(m))
     result.append('</body></message>')
     write_one(key, mtime, "".join(result), dest)
+
+    thread_db.do_one(m, key)
+
     return True
 
 class Incremental: pass
@@ -193,11 +196,13 @@ class Swish:
         if self.since: swishargs.extend(['-f', self.subfile("incremental")])
         self.swish = subprocess.Popen(swishargs, stdin=subprocess.PIPE)
         self.no_op = True
+        self.thread_db = mailpie.threaddb.ThreadDB(self.base)
 
     def subfile(self, ext): return self.base + "." + ext
     def lastfile(self): return self.subfile("last")
 
     def close(self):
+        self.thread_db.close()
         self.swish.stdin.close()
         result = self.swish.wait()
         if not self.no_op:
@@ -212,5 +217,5 @@ class Swish:
             merge_index(self.subfile("index"), [self.subfile("index.recent")])
 
     def do_one(self, filename, key, data=None):
-        if do_one(self.since, filename, key, data, self.swish.stdin):
+        if do_one(self.since, filename, key, self.thread_db, data, self.swish.stdin):
             self.no_op = False

@@ -25,33 +25,88 @@ import sys
 
 def usage(result=0):
     print """mailpie-admin: Perform mailpie database administration
-Usage: %s [-B dir] [-s]
+Usage: %s [-B dir] [-s] [-r id...]
     -B dir, --base=dir  Choose base location of the mailpie storage.
                         Default: $HOME/.mailpie
 
 Action:
     -s, --statistics        Show statistics about the mailpie database
+    -r, --remove id...      Remove items from the database by id
 """ % sys.argv[0]
     raise SystemExit, result
 
-def count(base):
-    result = 0
+def get_stats(base):
+    count = 0
+    size = 0
+    disk_size = 0
     for dirpath, dirnames, filenames in os.walk(base):
-        mailpie.log.progress(dirpath)
-        result += len(filenames)
-    return result
+        dirnames.sort()
 
-def remove(base, hash):
+        mailpie.log.progress(dirpath)
+        count += len(filenames)
+    
+        for f in filenames:
+            try:
+                st = os.stat(os.path.join(dirpath, f))
+            except os.error:
+                continue
+            size += st.st_size
+            disk_size += 512 * st.st_blocks
+        for d in dirnames:
+            try:
+                st = os.stat(os.path.join(dirpath, d))
+            except os.error:
+                continue
+            size += st.st_size
+            disk_size += 512 * st.st_blocks
+
+    index_size = 0
+    for suffix in ['index', 'index.prop', 'index.recent',
+                   'index.recent.prop', 'thread.db']:
+        f = base + "." + suffix
+        try:
+            st = os.stat(f)
+        except os.error:
+            continue
+        index_size += st.st_size
+        disk_size += 512 * st.st_blocks
+    
+    return {'count': count, 'message_size': size, 'disk_size': disk_size,
+            'index_size': index_size}
+
+def remove_one(base, hash):
     path = os.path.join(base, hash[:2], hash[2:])
     try:
         os.unlink(path)
     except os.error, detail:
-        print "%s: %s" % (path, detail)
+        print "Removing %s: %s" % (path, detail)
 
-NO_OPERATION, STATISTICS = range(2)
+def remove(base, args):
+    for a in args: remove_one(base, a)
+
+TiB = 1024.**4
+GiB = 1024.**3
+MiB = 1024.**2
+KiB = 1024.
+def human(s):
+    if s > 10000*GiB: return "%6.1f TiB" % (s / TiB)
+    if s > 10000*MiB: return "%6.1f GiB" % (s / GiB)
+    if s > 10000*KiB: return "%6.1f MiB" % (s / MiB)
+    if s > 10000: return "%6.1f KiB" % (s / KiB)
+    return "%6.1fb" % s
+
+def stats(base):
+    data = get_stats(base)
+    mailpie.log.log("Message count:    %6d", data['count'])
+    mailpie.log.log("Total message size: %10s", human(data['message_size']))
+    mailpie.log.log("Total index size:   %10s", human(data['index_size']))
+    mailpie.log.log("Disk space used:    %10s", human(data['disk_size']))
+
+NO_OPERATION, STATISTICS, REMOVE = range(3)
+
 def main(args):
     try:
-        opts, args = getopt.getopt(args, "sb:", ["statistics", "base="])
+        opts, args = getopt.getopt(args, "srB:", ["statistics", "base="])
     except getopt.error, detail:
         usage(detail)
 
@@ -61,11 +116,15 @@ def main(args):
     for k, v in opts:
         if k == "-s" or k == "--statistics":
             operation = STATISTICS
-        if k == "-b" or k == "-base":
+        if k == "-r" or k == "--remove":
+            operation = REMOVE
+        if k == "-B" or k == "--base":
             BASE = v
 
     if operation == STATISTICS:
-        mailpie.log.log("Messages in database: %6d", count(BASE))
+        stats(BASE)
+    elif operation == REMOVE:
+        remove(BASE, args)
     else:
         usage("Must specify an action") 
 

@@ -107,7 +107,7 @@ def format_time(s):
 
 def main(args):
     try:
-        opts, args = getopt.getopt(args, "Bin:h?", ["help", "base=", "index", "no-index"])
+        opts, args = getopt.getopt(args, "B:in:h?", ["help", "base=", "index", "no-index"])
     except getopt.GetoptError, detail:
         usage(detail)
 
