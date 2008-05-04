@@ -13,7 +13,7 @@ indexer (swish-e).
 
 REQUIREMENTS
 
-- python  (tested with python 2.4.3 and 2.5.2)
+- python with bsddb support (tested with python 2.4.3 and 2.5.2)
 - swish-e (tested with swish-e 2.4.3 and 2.4.5)
 
 mailpie is developed on Linux systems.
@@ -39,16 +39,17 @@ After adding messages with mailpie-add, the original mbox file is not
 needed to perform searches.
 
 To search for messages:
-    mailpie-search from=jepler mutt
-This will find messages where the From: line matches 'jepler' and the
-header or body matches 'mutt'.
+    mailpie-search --after="April 1" from=jepler mutt
+This will find messages dated after April 1 where the From: line matches
+'jepler' and the header or body matches 'mutt'.
 
 Available search tags are:
-    subject from to cc bcc list-id message-id date header
+    header subject from to cc bcc list-id
 Without a tag, the message headers and body are all searched.
 
 To rebuild the index from scratch (e.g., in case of an aborted
-mailpie-add): mailpie-index
+mailpie-add):
+    mailpie-index
 
 For more information on commandline options, see mailpie-xxx --help.
 
@@ -109,6 +110,12 @@ BUGS
 
 
 RELEASE HISTORY
+
+v0.4:
+ * mailpie-admin: new tool to get database statistics or remove messages
+   (e.g., spam that got in the index)
+ * all: use a separate threading database.  When upgrading, run mailpie-index
+   -f to create this index
 
 v0.3:
  * mailpie-add: fix typo that caused it to error at the end
