@@ -52,6 +52,8 @@ Searching:
 """ % os.path.basename(sys.argv[0])
     raise SystemExit, result
 
+class SwishError(RuntimeError): pass
+
 def run_swish(indexes, args, before=None, after=None):
     if not args:
         return
@@ -63,13 +65,26 @@ def run_swish(indexes, args, before=None, after=None):
         if after is None: after = 0
         swishargs.extend(["-L", "date", str(after), str(before)])
 
-    swish = subprocess.Popen(swishargs, stdout=subprocess.PIPE)
-    for row in swish.stdout: yield row.strip("\n")
+    swish = subprocess.Popen(swishargs, stdout=subprocess.PIPE,
+                stdin=open("/dev/null", "r"))
+    output = [row.strip("\n") for row in swish.stdout]
+    exitcode = swish.wait()
+    if exitcode != 0:
+        if output and output[-1] == ".": del output[-1]
+        if output:
+            raise SwishError, (
+                "Swish exited with code %d and the following information:\n    "
+                    % exitcode
+                + "\n    ".join(output)+"\n\nSee 'man SWISH-RUN' for details on"
+                "swish search terms")
+        else:
+            raise SwishError, "Swish exited with code %d" % exitcode
+    return output
 
 class Count: pass
 
 def copymail(path, f, show_ids):
-    if not os.path.exists(path): return 0
+    if not os.path.isfile(path): return 0
     if not f: return 1
     i = open(path)
     printed = False
@@ -139,13 +154,21 @@ def main(args):
     if thread:
         thread_db = bsddb.hashopen(base + ".thread.db", "r")
 
-    args = [q(arg) for arg in args]
-    for hash in run_swish(indexes, args, before, after):
-        path = os.path.join(base, hash[:2], hash[2:])
-        count += copymail(path, f, show_ids)
-        if count == limit: break
-        if thread:
-            msgids.add(thread_db.get("h:" + hash))
+    sargs = []
+    for a in args:
+        if a.startswith("after="): after = mailpie.parsedate.parsdate(a[6:])
+        elif a.startswith("before="): before = mailpie.parsedate.parsdate(a[6:])
+        else: sargs.append(q(a))
+
+    try:
+        for hash in run_swish(indexes, sargs, before, after):
+            path = os.path.join(base, hash[:2], hash[2:])
+            count += copymail(path, f, show_ids)
+            if count == limit: break
+            if thread:
+                msgids.add(thread_db.get("h:" + hash))
+    except SwishError, detail:
+        raise SystemExit, str(detail)
 
     if thread:
         printed = set(msgids)
@@ -164,14 +187,15 @@ def main(args):
                 count += copymail(path, f, show_ids)
     mailpie.log.progress_clear()
 
-    if count == 0:
-        mailpie.log.log("No match")
-
-    if count and target is None:
-        f.flush()
-        os.spawnvp(os.P_WAIT, mailreader[0], mailreader + [f.name])
+    if target is None:
+        if count == 0:
+            mailpie.log.log("No match")
+        else:
+            f.flush()
+            os.spawnvp(os.P_WAIT, mailreader[0], mailreader + [f.name])
 
     if target is Count:
         print count
+
 if __name__ == '__main__':
     main(sys.argv[1:])
