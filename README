@@ -112,6 +112,9 @@ BUGS
 RELEASE HISTORY
 
 v0.4:
+ * mailpie-search: Improved error reporting when swish is unhappy with search
+   terms
+ * mailpie-search: Improved progress reporting
  * mailpie-admin: new tool to get database statistics or remove messages
    (e.g., spam that got in the index)
  * all: use a separate threading database.  When upgrading, run mailpie-index
