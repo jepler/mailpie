@@ -18,7 +18,7 @@
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 from distutils.core import setup
-import os
+import os, commands
 
 def require_program(s):
     for el in os.environ['PATH'].split(os.pathsep):
@@ -31,7 +31,12 @@ def require_program(s):
 
 for p in ["swish-e"]: require_program(p)
 
-setup(name="mailpie", version="0.3",
+version = "0.4"
+if os.path.exists(".git"):
+    status, gitversion = commands.getstatusoutput("git-describe --tags")
+    if status == 0: version = gitversion
+
+setup(name="mailpie", version=version,
     author="Jeff Epler", author_email = "jepler@unpythonic.net",
     packages=['mailpie'], package_dir={'mailpie': 'lib/mailpie'},
     scripts=['scripts/mailpie-add', 'scripts/mailpie-index', 'scripts/mailpie-search'],
