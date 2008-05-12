@@ -87,13 +87,23 @@ def copymail(path, f, show_ids):
     if not os.path.isfile(path): return 0
     if not f: return 1
     i = open(path)
-    printed = False
-    for line in i:
-        if show_ids and (not printed) and (line == "\n" or line == "\r\n"):
-            f.write("X-Mailpie-ID: %s\n" % path.replace("/", "")[-40:])
-            printed = True
-        f.write(line)
+    if show_ids:
+        printed = False
+        for line in i:
+            if (not printed) and (line == "\n" or line == "\r\n"):
+                f.write("X-Mailpie-ID: %s\n" % path.replace("/", "")[-40:])
+                printed = True
+            f.write(line)
+    else:
+        shutil.copyfileobj(i, f)
     return 1
+
+def maybe_progress(m, a, b):
+    a1 = a
+    while a1 > 100:
+        if a1 % 10: return
+        a1 /= 10
+    mailpie.log.progress(m, a, b)
 
 def main(args):
     before = after = target = None
@@ -160,15 +170,23 @@ def main(args):
         elif a.startswith("before="): before = mailpie.parsedate.parsedate(a[6:])
         else: sargs.append(q(a))
 
+    mailpie.log.progress("Searching for messages")
     try:
-        for hash in run_swish(indexes, sargs, before, after):
-            path = os.path.join(base, hash[:2], hash[2:])
-            count += copymail(path, f, show_ids)
-            if count == limit: break
-            if thread:
-                msgids.add(thread_db.get("h:" + hash))
+        hashes = run_swish(indexes, sargs, before, after)
     except SwishError, detail:
         raise SystemExit, str(detail)
+
+    if len(hashes) > limit:
+        mailpie.log.log("Will only show the first %d of %d matches", limit, len(hashes))
+    hashes = hashes[:limit]
+    total = len(hashes)
+    for i, hash in enumerate(hashes):
+        maybe_progress("Retrieving message %d of %d", i, total)
+        path = os.path.join(base, hash[:2], hash[2:])
+        count += copymail(path, f, show_ids)
+        if count == limit: break
+        if thread:
+            msgids.add(thread_db.get("h:" + hash))
 
     if thread:
         printed = set(msgids)
