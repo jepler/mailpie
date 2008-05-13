@@ -39,7 +39,8 @@ if os.path.exists(".git"):
 setup(name="mailpie", version=version,
     author="Jeff Epler", author_email = "jepler@unpythonic.net",
     packages=['mailpie'], package_dir={'mailpie': 'lib/mailpie'},
-    scripts=['scripts/mailpie-add', 'scripts/mailpie-index', 'scripts/mailpie-search'],
+    scripts=['scripts/mailpie-add', 'scripts/mailpie-index', 'scripts/mailpie-search',
+             'scripts/mailpie-flog'],
     url="http://emergent.unpy.net/software/mailpie/",
     license="GPL",
 )

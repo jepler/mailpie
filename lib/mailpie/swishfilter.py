@@ -64,10 +64,10 @@ def merge_index(target, additional):
         return
 
     merge = target + ".merge"
-    swish_args = ['swish-e', '-M']
+    swish_args = ['mailpie-flog', 'swish-e', '-M']
     if exists: swish_args += [target]
     swish_args += additional + [merge]
-    os.spawnvp(os.P_WAIT, 'swish-e', swish_args)
+    os.spawnvp(os.P_WAIT, swish_args[0], swish_args)
     rename_index(merge, target)
     for index in additional: unlink_index(index)
 
@@ -192,7 +192,7 @@ class Swish:
         self.swishconfig = tempfile.NamedTemporaryFile()
         self.swishconfig.write(swishconfig_template % self.subfile("index"))
         self.swishconfig.flush()
-        swishargs = ['swish-e', '-S', 'prog', '-i', 'stdin', '-c', self.swishconfig.name]
+        swishargs = ['mailpie-flog', 'swish-e', '-S', 'prog', '-i', 'stdin', '-c', self.swishconfig.name]
         if self.since: swishargs.extend(['-f', self.subfile("incremental")])
         self.swish = subprocess.Popen(swishargs, stdin=subprocess.PIPE)
         self.no_op = True
