@@ -73,7 +73,7 @@ def store(base, content):
     dir = os.path.join(base, hash[:2])
     file = os.path.join(base, hash[:2], hash[2:])
     if os.path.exists(file):
-        mailpie.log.log("Duplicate message with hash", hash)
+        mailpie.log.log("Duplicate message with hash %r", hash)
         return file, hash
     make_dir_once(dir)
     fd, temp = tempfile.mkstemp(dir=dir)
@@ -85,7 +85,7 @@ def store(base, content):
         try:
             os.unlink(temp)
         except os.error:
-            mailpie.log.log("Failed to unlink temporary", temp)
+            mailpie.log.log("Failed to unlink temporary %r", temp)
         if detail.errno != errno.EEXIST:
             raise os.error, detail
     return file, hash
