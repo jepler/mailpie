@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN" "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+
+<article lang="en">
+<articleinfo>
+    <title>Searching with mailpie</title>
+    <author>
+        <firstname>Jeff</firstname>
+        <surname>Epler</surname>
+        <affiliation><address><email>jepler@unpythonic.net</email></address></affiliation>
+    </author>
+    <authorinitials>JE</authorinitials>
+
+
+</articleinfo>
+<simpara>The script <literal>mailpie-search</literal> is used for searching.  <literal>mailpie-search
+--help</literal> shows a summary of commandline arguments.</simpara>
+
+<simpara>Mailpie uses the swish-e full-text indexer.  Most of the ways to search
+using swish-e are supported.  However, there are a few differences in
+commandline syntax which are discussed below.</simpara>
+
+<section id="_words_and_phrases">
+<title>Words and phrases</title>
+<simpara>To search for messages containing the word &#8220;quartz&#8221;:</simpara>
+
+<screen>$ mailpie-search quartz</screen>
+<simpara>To search for messages containing the phrase &#8220;blue ox&#8221;:</simpara>
+
+<screen>$ mailpie-search "blue ox"</screen>
+<note>
+<simpara>In mailpie-search, arguments with embedded whitespace are taken to
+be phrases.  This differs from swish, where an extra level of quotes are
+required to do phrase searches:</simpara>
+
+<screen>$ swish-e -w '"blue ox"'</screen>
+</note>
+</section>
+<section id="_in_headers">
+<title>In Headers</title>
+<simpara>To search for messages with the subject &#8220;quartz&#8221; in the subject line:</simpara>
+
+<screen>$ mailpie-search subject=quartz</screen>
+<simpara>To search for messages with the phrase &#8220;blue ox&#8221; in the subject line:</simpara>
+
+<screen>$ mailpie-search subject="blue ox"</screen>
+<note>
+<simpara>The following message headers can searched using the <literal>name=term</literal> syntax:
+<emphasis>subject</emphasis> <emphasis>from</emphasis> <emphasis>to</emphasis> <emphasis>cc</emphasis> <emphasis>bcc</emphasis> <emphasis>list-id</emphasis></simpara>
+
+<simpara>The entire message headers (not just the ones shown above) can be
+searched using <literal>header=term</literal>.</simpara>
+
+</note>
+</section>
+<section id="_multiple_terms">
+<title>Multiple terms</title>
+<simpara>To search for messages containing the word &#8220;quartz&#8221; and the phrase &#8220;blue
+ox&#8221;:</simpara>
+
+<screen>$ mailpie-search quartz "blue ox"</screen>
+<simpara>To search for messages containing the word &#8220;quartz&#8221; or the phrase &#8220;blue
+ox&#8221;:</simpara>
+
+<screen>$ mailpie-search quartz or "blue ox"</screen>
+<simpara>To search for messages containing the word &#8220;lotus&#8221; and either the word
+&#8220;quartz&#8221; or the phrase &#8220;blue ox&#8221;</simpara>
+
+<screen>$ mailpie-search lotus [ quartz or "blue ox" ]</screen>
+</section>
+<section id="_date_ranges">
+<title>Date ranges</title>
+<simpara>To search for messages sent after April 1 and containing the word
+&#8220;lotus&#8221;:</simpara>
+
+<screen>$ mailpie-search --after="april 1" lotus</screen>
+<simpara>To search for messages sent more than 90 days ago and containing the word
+&#8220;lotus&#8221;:</simpara>
+
+<screen>$ mailpie-search --before="90 days ago" lotus</screen>
+<simpara>For a description of the syntax for dates, read the documentation for
+date(1):</simpara>
+
+<screen>$ info coreutils date</screen>
+<note>
+<simpara><literal>--before=</literal> and <literal>--after</literal> use the Date header which is controlled by the
+sender.  There is no guarantee that this date is accurate, and even if
+it is accurate it reflects the time when the message was composed or
+sent, not the time when it was received.</simpara>
+
+</note>
+<note>
+<simpara><literal>--before=</literal> and <literal>--after=</literal> are always "and"ed with the given search
+terms.  At least one other term must be used with <literal>--before=</literal> and
+<literal>--after=</literal>.</simpara>
+
+</note>
+</section>
+</article>
