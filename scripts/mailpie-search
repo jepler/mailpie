@@ -46,7 +46,7 @@ Searching:
     -l NUM, --limit=NUM     Return no more than NUM
 
     -t, --thread            Include full threads
-    -n, --no-thread         Include full threads
+    -n, --no-thread         Do not include threads (default)
 
     terms...                See SWISH-RUN(1) for details on search terms
 """ % os.path.basename(sys.argv[0])
