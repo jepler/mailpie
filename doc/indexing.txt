@@ -1,0 +1,80 @@
+Indexing with mailpie
+=====================
+:Author: Jeff Epler
+:Email:  jepler@unpythonic.net
+
+The scripts `mailpie-add` and `mailpie-index` are used for indexing.
+`mailpie-add \--help` and `mailpie-index \--help` show summaries of
+commandline arguments.
+
+== Using procmail and cron to incrementally index new messages
+One way to index new mail is to use `procmail` to save a copy of every
+message to a specific mailbox (`for-mailpie`), then periodically call
+`mailpie-add` from cron to add these messages to the index.  The
+instructions below assume that you already deliver your mail with
+procmail.
+
+=== procmailrc fragment
+----
+# Above this point: filtering rules (e.g., to remove spam)
+
+:0c
+for-mailpie
+
+# Below this point: delivery rules (e.g., to mailing list folders)
+----
+
+=== mailpie-incremental-add script
+This script must be customized to list the directory where your
+mailboxes are stored.  Mark it executable and place it in `~/bin`.
+----
+#!/bin/sh
+set -e
+cd $HOME/mail                        # Customize this line
+if [ -e for-mailpie.tmp ]; then 
+    echo "Old temporary box exists"
+    exit 1
+fi
+
+mv for-mailpie for-mailpie.tmp
+mailpie-add for-mailpie.tmp
+rm for-mailpie.tmp
+----
+
+=== crontab fragment
+----
+17 */3 * * * mailpie-incremental-add
+----
+
+== Adding existing mailboxes
+For each mailbox you want to add, simply run
+----
+$ mailpie-add mailbox-path
+----
+These mailboxes must be in "UNIX mbox format with From_ lines".  If you
+use a different format, you must convert to the mbox format and use that
+converted version as the argument to mailpie-add.
+
+== Short-term and long-term indexes
+From time to time, execute
+----
+$ mailpie-index --merge --incremental
+----
+to merge the short-term index into the long-term index.  When the
+short-term index grows large, `mailpie-add` operations can take a long
+time.
+
+== Rebuilding indexes
+In some cases, it may be necessary to completely rebuild the indexes.
+(For example, version 0.4 introduces the separate thread index and
+requires a rebuild).  To do this,
+----
+$ mailpie-index --full
+----
+
+== Multiple invocations and locking
+`mailpie-add` and `mailpie-index` use a simple lockfile scheme to ensure
+that only one program is updating the index at a time.  This lockfile
+scheme is not safe to use over NFS.
+
+// vim:tw=72:sts=4:ts=8:et:sw=4
