@@ -107,7 +107,10 @@ def maybe_progress(m, a, b):
 
 def main(args):
     before = after = target = None
-    mailreader = ["mutt", "-R", "-f"]
+    if os.environ.get("MAILPIE_READER"):
+        mailreader = shlex.split(os.environ["MAILPIE_READER"])
+    else:
+        mailreader = ["mutt", "-R", "-f"]
     limit = 2000
     thread = False
     show_ids = False
