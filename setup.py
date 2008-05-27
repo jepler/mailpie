@@ -31,10 +31,12 @@ def require_program(s):
 
 for p in ["swish-e"]: require_program(p)
 
-version = "0.4"
+version = None
 if os.path.exists(".git"):
     status, gitversion = commands.getstatusoutput("git-describe --tags")
     if status == 0: version = gitversion
+if not version:
+    version = open("VERSION").read().strip()
 
 setup(name="mailpie", version=version,
     author="Jeff Epler", author_email = "jepler@unpythonic.net",
