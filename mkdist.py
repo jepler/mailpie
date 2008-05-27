@@ -17,9 +17,13 @@
 #    along with this program; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+import commands
+import gzip
 import os
 import re
 import sys
+import tarfile
+import StringIO
 
 version_tag = re.compile("^v\d+(\.\d+)*$")
 
@@ -50,12 +54,32 @@ def main(args):
     elif len(args) > 1:
         raise SystemExit, "Usage: %s [version]" % sys.argv[0]
     else:
+        status, gitversion = commands.getstatusoutput("git-describe --tags")
         version = highest_version()
+        if status != 0 or version != gitversion:
+            raise SystemExit, """\
+Highest version %r doesn't match description %r.
+Specify version number explicitly if this is what you want""" % (
+                    version, gitversion)
 
     version = version.lstrip("v")
+    verstream = StringIO.StringIO("%s\n" % version)
+    verinfo = tarfile.TarInfo('%(p)s-%(v)s/VERSION' % {'p': 'mailpie', 'v': version})
+    verinfo.mode = 0660
+    verinfo.size = len(verstream.getvalue())
 
-    os.system("git-archive --prefix=%(p)s-%(v)s/ v%(v)s"
-          " | gzip -9 > ../%(p)s-%(v)s.tar.gz" % {'p': 'mailpie', 'v': version})
+    tardata = os.popen("git-archive --prefix=%(p)s-%(v)s/ v%(v)s"
+                            % {'p': 'mailpie', 'v': version}).read()
+    tarstream = StringIO.StringIO(tardata)
+
+    tar = tarfile.TarFile(mode="a", fileobj=tarstream)
+    tar.addfile(verinfo, verstream)
+    tar.close()
+
+    out = gzip.open("../%(p)s-%(v)s.tar.gz" % {'p': 'mailpie', 'v': version},
+                        "wb")
+    out.write(tarstream.getvalue())
+    out.close()
     os.system("ls -l ../%(p)s-%(v)s.tar.gz" % {'p': 'mailpie', 'v': version})
 
 if __name__ == '__main__':
