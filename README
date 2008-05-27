@@ -102,11 +102,7 @@ to be added:
 
 BUGS
 
- * When searching for threads, only messages earlier in the thread than
-   the matching message are found.
-
- * There is no provision for removing messages from a mailpie storage area
-   or from the index.
+ * There are no known bugs at this time
 
 
 RELEASE HISTORY
@@ -115,10 +111,15 @@ v0.4:
  * mailpie-search: Improved error reporting when swish is unhappy with search
    terms
  * mailpie-search: Improved progress reporting
+ * mailpie-search: Mailreader may come from environment variable
+ * mailpie-add, mailpie-index: clean up progress messages from swish when
+   output is going to email or other non-terminal destination
  * mailpie-admin: new tool to get database statistics or remove messages
    (e.g., spam that got in the index)
- * all: use a separate threading database.  When upgrading, run mailpie-index
+ * use a separate threading database.  When upgrading, run mailpie-index
    -f to create this index
+ * Documentation in the doc/ directory.  builds using asciidoc or readable
+   as-is
 
 v0.3:
  * mailpie-add: fix typo that caused it to error at the end
