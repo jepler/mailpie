@@ -23,6 +23,7 @@ import os
 import re
 import sys
 import tarfile
+import time
 import StringIO
 
 version_tag = re.compile("^v\d+(\.\d+)*$")
@@ -67,6 +68,7 @@ Specify version number explicitly if this is what you want""" % (
     verinfo = tarfile.TarInfo('%(p)s-%(v)s/VERSION' % {'p': 'mailpie', 'v': version})
     verinfo.mode = 0660
     verinfo.size = len(verstream.getvalue())
+    verinfo.mtime = time.time()
 
     tardata = os.popen("git-archive --prefix=%(p)s-%(v)s/ v%(v)s"
                             % {'p': 'mailpie', 'v': version}).read()
