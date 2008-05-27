@@ -31,6 +31,10 @@ mailboxes are stored.  Mark it executable and place it in `~/bin`.
 #!/bin/sh
 set -e
 cd $HOME/mail                        # Customize this line
+if ! [ -e for-mailpie ]; then
+    exit 0
+fi
+
 if [ -e for-mailpie.tmp ]; then 
     echo "Old temporary box exists"
     exit 1
