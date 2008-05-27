@@ -63,10 +63,11 @@ Highest version %r doesn't match description %r.
 Specify version number explicitly if this is what you want""" % (
                     version, gitversion)
 
+    version = version.lstrip("v")
+
     DIRNAME = "%(p)s-%(v)s" % {'p': 'mailpie', 'v': version}
     TARNAME = DIRNAME + '.tar.gz'
 
-    version = version.lstrip("v")
     verstream = StringIO.StringIO("%s\n" % version)
     verinfo = tarfile.TarInfo(DIRNAME + "/VERSION")
     verinfo.mode = 0660
