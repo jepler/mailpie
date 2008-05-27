@@ -106,14 +106,15 @@ terms.  At least one other term must be used with `\--before=` and
 
 == Integration with various mail clients
 === Mutt
-By default, mailpie-search uses mutt to view mailboxes
+By default, mailpie-search uses mutt to view mailboxes.  It should
+require no special configuration in this case.
+
 === Others
-Use the environment variable `MAILPIE_READER`, or the `\--mailreader=`
-commandline argument to cause mailpie to invoke a different mail reader.
-The arguments are split into words according to python `shlex`, which is
-similar to sh.  After the program name and flags (if any), a path to a
-temporary mailbox is given.  When the invoked program exits, the
-temporary mailbox is removed.
+Use the environment variable `MAILPIE_READER` to cause mailpie to invoke
+a different mail reader.  The arguments are split into words according
+to python `shlex`, which is similar to sh.  After the program name and
+flags (if any), a path to a temporary mailbox is given.  When the
+invoked program exits, the temporary mailbox is removed.
 
 If you have successfully used mailpie-search with a particular mail
 reader, please report what --mailreader= value you used.
