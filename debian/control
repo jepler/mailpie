@@ -1,0 +1,23 @@
+Source: mailpie
+Section: mail
+Priority: extra
+Maintainer: Jeff Epler <jepler@unpythonic.net>
+Build-Depends: python, python-support
+XS-Python-Version: current
+Standards-Version: 2.0.0-rc
+
+Package: mailpie
+XB-Python-Version: ${python:Versions}
+Depends: swish-e, mutt
+Section: mail
+Architecture: all
+Description: commandline full-text search for e-mail
+ mailpie is a suite of programs for commandline full-text search of large
+ e-mail archives.  Keep your inbox uncluttered while retaining the
+ ability to quickly find an old message that becomes relevant again.
+ .
+ In fact, mailpie performs searches much more quickly than many MUAs'
+ built in search facilities because it uses a time-tested full text
+ indexer (swish-e).
+
+

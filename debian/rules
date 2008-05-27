@@ -1,0 +1,28 @@
+#!/usr/bin/make -f
+
+PREFIX=debian/tmp/usr
+
+build:; @true
+install:
+	./setup.py install --prefix=$(PREFIX)/bin --no-compile --install-lib=$(PREFIX)/share/python-support/mailpie
+	dh_movefiles
+
+binary-indep: install
+	dh_pysupport
+	dh_installchangelogs
+	dh_installdocs
+	dh_installdeb
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep
+
+clean:
+	dh_clean
+	rm -rf build dist 
+	rm -f debian/postinst.debhelper debian/prerm.debhelper
+
+.PHONY: build install binary binary-indep clean
+
+# vim:noet:ts=8:sts=8:sw=8:

@@ -1,0 +1,10 @@
+./usr/share/python-support/mailpie/mailpie-v0.4.1_1_gc954037.egg-info
+./usr/share/python-support/mailpie/mailpie/log.py
+./usr/share/python-support/mailpie/mailpie/swishfilter.py
+./usr/share/python-support/mailpie/mailpie/__init__.py
+./usr/share/python-support/mailpie/mailpie/parsedate.py
+./usr/share/python-support/mailpie/mailpie/threaddb.py
+./usr/bin/bin/mailpie-index
+./usr/bin/bin/mailpie-search
+./usr/bin/bin/mailpie-add
+./usr/bin/bin/mailpie-flog
