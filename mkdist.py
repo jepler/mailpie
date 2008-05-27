@@ -63,26 +63,28 @@ Highest version %r doesn't match description %r.
 Specify version number explicitly if this is what you want""" % (
                     version, gitversion)
 
+    DIRNAME = "%(p)s-%(v)s" % {'p': 'mailpie', 'v': version}
+    TARNAME = DIRNAME + '.tar.gz'
+
     version = version.lstrip("v")
     verstream = StringIO.StringIO("%s\n" % version)
-    verinfo = tarfile.TarInfo('%(p)s-%(v)s/VERSION' % {'p': 'mailpie', 'v': version})
+    verinfo = tarfile.TarInfo(DIRNAME + "/VERSION")
     verinfo.mode = 0660
     verinfo.size = len(verstream.getvalue())
     verinfo.mtime = time.time()
 
-    tardata = os.popen("git-archive --prefix=%(p)s-%(v)s/ v%(v)s"
-                            % {'p': 'mailpie', 'v': version}).read()
+    tardata = os.popen("git-archive --prefix=%(p)s/ v%(v)s"
+                            % {'p': DIRNAME, 'v': version}).read()
     tarstream = StringIO.StringIO(tardata)
 
     tar = tarfile.TarFile(mode="a", fileobj=tarstream)
     tar.addfile(verinfo, verstream)
     tar.close()
 
-    out = gzip.open("../%(p)s-%(v)s.tar.gz" % {'p': 'mailpie', 'v': version},
-                        "wb")
+    out = gzip.open("../" + TARNAME, "wb")
     out.write(tarstream.getvalue())
     out.close()
-    os.system("ls -l ../%(p)s-%(v)s.tar.gz" % {'p': 'mailpie', 'v': version})
+    os.system("ls -l ../%s" % TARNAME)
 
 if __name__ == '__main__':
     main(sys.argv[1:])
