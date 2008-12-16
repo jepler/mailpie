@@ -89,9 +89,14 @@ def copymail(path, f, show_ids):
     i = open(path)
     if show_ids:
         printed = False
+        message_id = None
         for line in i:
+            if line.lower().startswith("message-id:") and " " in line:
+                message_id = line.split()[1].strip("<>")
             if (not printed) and (line == "\n" or line == "\r\n"):
                 f.write("X-Mailpie-ID: %s\n" % path.replace("/", "")[-40:])
+                if message_id:
+                    f.write("X-Gmane-URL: http://mid.gmane.org/%s\n" % message_id)
                 printed = True
             f.write(line)
     else:
