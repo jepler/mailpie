@@ -1,3 +1,9 @@
+mailpie (0.4.2~1) hardy; urgency=low
+
+  * Fix things
+
+ -- Jeff Epler <jepler@unpythonic.net>  Mon, 29 Dec 2008 10:28:41 -0600
+
 mailpie (0.4.2~0) unstable; urgency=low
 
   * Initial release.

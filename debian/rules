@@ -4,10 +4,9 @@ PREFIX=debian/tmp/usr
 
 build:; @true
 install:
-	./setup.py install --prefix=$(PREFIX) --no-compile --install-lib=$(PREFIX)/share/python-support/mailpie
+	./setup.py install --prefix=$(PREFIX)
 
 binary-indep: install
-	dh_pysupport
 	(cd debian/tmp; find -not -type d) > debian/mailpie.files
 	dh_movefiles
 	dh_installchangelogs
