@@ -99,6 +99,8 @@ def write_one(path, mtime, data, dest=sys.stdout):
 
 null = string.maketrans("", "")
 remove = "".join(chr(c) for c in range(32))
+hremove = "".join(c for c in (chr(c) for c in range(256)) if not c in string.lowercase + string.uppercase + string.digits + "-")
+
 
 def escape(s):
     s = s.translate(null, remove)
@@ -122,6 +124,14 @@ def recode(payload, encoding):
             payload = payload.decode("latin-1")
     return payload.encode("utf-8")
  
+def recode_header(s):
+    if isinstance(s, basestring):
+        try:
+            s = s.decode("utf-8")
+        except UnicodeDecodeError:
+            s = s.decode("latin-1")
+    return s.encode("utf-8")
+
 def get_payload(m):
     payload = m.get_payload()
     encoding = m.get_content_charset()
@@ -167,6 +177,8 @@ def do_one(since, filename, key, thread_db, data=None, dest=sys.stdout):
             v = v.replace("\n", " ")
             v = v.replace("\t", " ")
             if h in date_fields: v = parse_date(v)
+            v = recode_header(v)
+            h = h.translate(null, hremove)
             result.append('<%s>%s</%s>\n' % (h, escape(v), h))
     result.append('</header><body>')
     result.append(get_payload(m))
