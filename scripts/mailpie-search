@@ -206,8 +206,8 @@ def main(args):
         visited = set()
         while msgids and count < limit:
             msgid = msgids.pop()
-            mailpie.log.progress("Chasing: %s and %d more", msgid, len(msgids))
             if msgid in visited: continue
+            mailpie.log.log("Chasing: [%d] %s", len(msgids), msgid)
             visited.add(msgid)
             th = set(thread_db.get("t:" + msgid, "").split()) - printed
             msgids.update(th)
