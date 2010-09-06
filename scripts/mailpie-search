@@ -31,7 +31,7 @@ Action:
     -c,      --count        Write number of matches
     -o FILE, --out=FILE     Write result to FILE
     -p,      --stdout       Write result to stdout
-    -r,      --read:        Open mailbox in mailreader (default)
+    -r,      --read         Open mailbox in mailreader (default)
 
     -i,      --show-ids     Show the mailpie message ID in a header
 
