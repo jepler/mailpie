@@ -15,10 +15,16 @@
 #    along with this program; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 import bsddb
+import os
+import mailpie.log
 
 class ThreadDB:
-    def __init__(self, base):
-        self.db = bsddb.hashopen(base + ".thread.db")
+    def __init__(self, base, full):
+        db = base + ".thread.db"
+        if full and os.path.exists(db):
+            os.unlink(db)
+            mailpie.log.log("removed old thread db")
+        self.db = bsddb.hashopen(db)
         self._cache = {}
 
     def close(self):

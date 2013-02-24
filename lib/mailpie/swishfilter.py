@@ -199,6 +199,7 @@ class Swish:
             lastfile = self.lastfile()
             if os.path.exists(lastfile):
                 since = float(open(lastfile).read())
+        full = (since == 0)
         self.since = since
         self.start = start
         self.lock = Lock(self.subfile("lock"))
@@ -209,7 +210,7 @@ class Swish:
         if self.since: swishargs.extend(['-f', self.subfile("incremental")])
         self.swish = subprocess.Popen(swishargs, stdin=subprocess.PIPE)
         self.no_op = True
-        self.thread_db = mailpie.threaddb.ThreadDB(self.base)
+        self.thread_db = mailpie.threaddb.ThreadDB(self.base, full)
 
     def subfile(self, ext): return self.base + "." + ext
     def lastfile(self): return self.subfile("last")
