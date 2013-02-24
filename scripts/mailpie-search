@@ -19,7 +19,7 @@
 
 import sys, os, subprocess, shutil, getopt, tempfile, re, shlex
 import mailpie.swishfilter, mailpie.parsedate, mailpie.log
-import bsddb
+import bsddb, atexit, hashlib
 
 def usage(result=0):
     print """mailpie-search: Put search results in a mailbox
@@ -30,10 +30,12 @@ Usage: %s [-o file|-p|-m] [-b date] [-a date] [-M mailreader] terms...
 Action:
     -c,      --count        Write number of matches
     -o FILE, --out=FILE     Write result to FILE
-    -p,      --stdout       Write result to stdout
+    -p,      --stdout       Write result to stdout (implies --mbox)
     -r,      --read         Open mailbox in mailreader (default)
 
+    -m,      --mbox         Output in mbox format (default: maildir)
     -i,      --show-ids     Show the mailpie message ID in a header
+                            (implies --mbox)
 
     -M prog, --mailreader=PROG
                             Mailreader to invoke (default: "mutt -R -f")
@@ -83,9 +85,13 @@ def run_swish(indexes, args, before=None, after=None):
 
 class Count: pass
 
-def copymail(path, f, show_ids):
+def copymail(path, f, show_ids, mbox):
     if not os.path.isfile(path): return 0
     if not f: return 1
+    if not mbox:
+        path_out = os.path.join(f, 'cur', hashlib.sha1(path).hexdigest()+":2,S")
+        os.symlink(path, path_out)
+        return 1
     i = open(path)
     if show_ids:
         printed = False
@@ -119,14 +125,15 @@ def main(args):
     limit = 2000
     thread = False
     show_ids = False
+    format_mbox = False
 
     base = os.path.expanduser("~/.mailpie")
 
     try:
-        opts, args = getopt.getopt(args, "B:co:prM:a:b:l:tnih?",
+        opts, args = getopt.getopt(args, "B:mco:prM:a:b:l:tnih?",
             ("base=", "count", "out=", "stdout", "read", "mailreader",
              "help", "after=", "before=", "limit=", "thread", "no-thread",
-             "show-ids"))
+             "show-ids", "mbox"))
     except getopt.GetoptError, detail:
         usage(detail)
 
@@ -137,6 +144,7 @@ def main(args):
         elif k in ("-r", "--read"): target = None
         elif k in ("-c", "--count"): target = Count
         elif k in ("-M", "--mailreader"): mailreader = shlex.split(v)
+        elif k in ("-m", "--mbox"): format_mbox = True
         elif k in ("-l", "--limit"): limit = int(v)
         elif k in ("-a", "--after"): after = mailpie.parsedate.parsedate(v)
         elif k in ("-b", "--before"): before = mailpie.parsedate.parsedate(v)
@@ -146,11 +154,20 @@ def main(args):
         elif k in ("-i", "--show-ids"): show_ids = True
         elif k in ("--help", "-h", "-?"): usage()
 
+    if show_ids or target: format_mbox = True
+
     indexes = mailpie.swishfilter.get_index_files(base)
 
     if target is None:
         if sys.stdout.isatty():
-            f = tempfile.NamedTemporaryFile(prefix="mailpie", suffix=".mbox")
+            if format_mbox:
+                f = tempfile.NamedTemporaryFile(prefix="mailpie", suffix=".mbox")
+            else:
+                f = tempfile.mkdtemp(prefix="mailpie", suffix=".maildir")
+                os.mkdir(os.path.join(f, 'new'))
+                os.mkdir(os.path.join(f, 'cur'))
+                os.mkdir(os.path.join(f, 'tmp'))
+                atexit.register(shutil.rmtree, f)
         else:
             target = "-"
             f = sys.stdout
@@ -158,9 +175,14 @@ def main(args):
         f = sys.stdout
     elif target is Count:
         f = None
-    else:
+    elif format_mbox:
         f = open(target, "w")
-
+    else:
+        f = tempfile.mkdtemp(prefix="mailpie", suffix=".maildir")
+        os.mkdir(os.path.join(f, 'new'))
+        os.mkdir(os.path.join(f, 'cur'))
+        os.mkdir(os.path.join(f, 'tmp'))
+        atexit.register(shutil.rmtree, f)
     count = 0
     msgids = set()
 
@@ -196,7 +218,7 @@ def main(args):
     for i, hash in enumerate(hashes):
         maybe_progress("Retrieving message %d of %d", i, total)
         path = os.path.join(base, hash[:2], hash[2:])
-        count += copymail(path, f, show_ids)
+        count += copymail(path, f, show_ids, format_mbox)
         if count == limit: break
         if thread:
             msgids.add(thread_db.get("h:" + hash))
@@ -215,15 +237,18 @@ def main(args):
                 hash = thread_db.get('m:' + msgid)
                 if hash is None: continue
                 path = os.path.join(base, hash[:2], hash[2:])
-                count += copymail(path, f, show_ids)
+                count += copymail(path, f, show_ids, format_mbox)
     mailpie.log.progress_clear()
 
     if target is None:
         if count == 0:
             mailpie.log.log("No match")
         else:
-            f.flush()
-            os.spawnvp(os.P_WAIT, mailreader[0], mailreader + [f.name])
+            if isinstance(f, str):
+                os.spawnvp(os.P_WAIT, mailreader[0], mailreader + [f])
+            else:
+                f.flush()
+                os.spawnvp(os.P_WAIT, mailreader[0], mailreader + [f.name])
 
     if target is Count:
         print count
