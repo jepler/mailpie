@@ -1,8 +1,17 @@
+mailpie (0.4.3) lucid; urgency=low
+
+  * fix installation on 10.04
+
+ -- Jeff Epler <jepler@unpythonic.net>  Tue, 27 Jul 2010 08:01:39 -0500
+
 mailpie (0.4.2~1) hardy; urgency=low
 
   * Fix things
+  * some mailers write invalid things in the in-reply-to header which loused
+    up the thread database.  Try harder to accept only plausible-looking
+    message IDs in i-r-t and references.
 
- -- Jeff Epler <jepler@unpythonic.net>  Mon, 29 Dec 2008 10:28:41 -0600
+ -- Jeff Epler <jepler@unpythonic.net>  Thu, 02 Apr 2009 07:10:48 -0500
 
 mailpie (0.4.2~0) unstable; urgency=low
 
