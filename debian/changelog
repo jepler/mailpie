@@ -1,3 +1,9 @@
+mailpie (0.4.4) lucid; urgency=low
+
+  * Various bugfixes
+
+ -- Jeff Epler <jepler@unpythonic.net>  Sun, 24 Feb 2013 11:31:07 -0600
+
 mailpie (0.4.3) lucid; urgency=low
 
   * fix installation on 10.04
