@@ -16,8 +16,10 @@
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 import bsddb
 import os
+import re
 import mailpie.log
 
+msgid_pat = re.compile("<[^>]*>")
 class ThreadDB:
     def __init__(self, base, full):
         db = base + ".thread.db"
@@ -33,14 +35,23 @@ class ThreadDB:
         self.db.close()
 
     def threads(self, message):
-        for h in message.get_all("in-reply-to", []):
-            for word in h.split(): yield word
-        for h in message.get_all("references", []):
-            for word in h.split(): yield word
+        h = "".join(message.get_all("in-reply-to", []))
+        h = h.replace(" ", "")
+        h = h.replace("\r", "")
+        h = h.replace("\n", "")
+        h = h.replace("\t", "")
+        for word in msgid_pat.findall(h): yield word
+        h = "".join(message.get_all("references", []))
+        h = h.replace(" ", "")
+        h = h.replace("\r", "")
+        h = h.replace("\n", "")
+        h = h.replace("\t", "")
+        for word in msgid_pat.findall(h): yield word
 
     def do_one(self, message, hash):
         msgid = message.get("message-id")
         if msgid is None: return
+        if not msgid_pat.match(msgid): return
         self.db["h:" + hash] = msgid
         self.db['m:' + msgid] = hash
         threads = set(self.threads(message))
