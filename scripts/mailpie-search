@@ -199,7 +199,7 @@ def main(args):
     sargs = []
     for a in args:
         if a.startswith("after="): after = mailpie.parsedate.parsedate(a[6:])
-        elif a.startswith("before="): before = mailpie.parsedate.parsedate(a[6:])
+        elif a.startswith("before="): before = mailpie.parsedate.parsedate(a[7:])
         else: sargs.append(q(a))
 
     if not sargs:
