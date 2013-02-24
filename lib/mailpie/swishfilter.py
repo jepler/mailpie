@@ -28,6 +28,7 @@ import time
 import rfc822
 import mailpie.log
 import mailpie.threaddb
+import binascii
 
 swishconfig_template = """
 DefaultContents XML*
@@ -117,7 +118,7 @@ def recode(payload, encoding):
     encoding = encoding.replace(" ", "")
     try:
         payload = payload.decode(encoding)
-    except (UnicodeDecodeError, LookupError):
+    except (UnicodeDecodeError, LookupError, binascii.Error):
         try:
             payload = payload.decode("utf-8")
         except UnicodeDecodeError:
