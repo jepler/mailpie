@@ -28,7 +28,7 @@ def screen_size():
     import fcntl
     res = fcntl.ioctl(2, TIOCGWINSZ, "\0" * 4)
     return struct.unpack("hh", res)
-screen_width, screen_height = screen_size()
+screen_height, screen_width = screen_size()
 
 last_width = 0
 def progress(message, *args):
