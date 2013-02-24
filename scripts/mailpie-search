@@ -19,7 +19,7 @@
 
 import sys, os, subprocess, shutil, getopt, tempfile, re, shlex
 import mailpie.swishfilter, mailpie.parsedate, mailpie.log
-import bsddb, atexit, hashlib
+import bsddb, atexit, hashlib, urllib
 
 def usage(result=0):
     print """mailpie-search: Put search results in a mailbox
@@ -102,6 +102,7 @@ def copymail(path, f, show_ids, mbox):
             if (not printed) and (line == "\n" or line == "\r\n"):
                 f.write("X-Mailpie-ID: %s\n" % path.replace("/", "")[-40:])
                 if message_id:
+                    message_id = urllib.quote(message_id, '')
                     f.write("X-Gmane-URL: http://mid.gmane.org/%s\n" % message_id)
                 printed = True
             f.write(line)
