@@ -38,7 +38,8 @@ Action:
                             (implies --mbox)
 
     -M prog, --mailreader=PROG
-                            Mailreader to invoke (default: "mutt -R -f")
+                            Mailreader to invoke
+                            (default: "mutt -R -e'unmailboxes *' -f")
 
 Searching:
     -b DATE, --before=DATE  Only include messages before DATE
@@ -122,7 +123,7 @@ def main(args):
     if os.environ.get("MAILPIE_READER"):
         mailreader = shlex.split(os.environ["MAILPIE_READER"])
     else:
-        mailreader = ["mutt", "-R", "-f"]
+        mailreader = ["mutt", "-R", "-eunmailboxes *", "-f"]
     limit = 2000
     thread = False
     show_ids = False
