@@ -55,7 +55,7 @@ def main(args):
     elif len(args) > 1:
         raise SystemExit, "Usage: %s [version]" % sys.argv[0]
     else:
-        status, gitversion = commands.getstatusoutput("git-describe --tags")
+        status, gitversion = commands.getstatusoutput("git describe --tags")
         version = highest_version()
         if status != 0 or version != gitversion:
             raise SystemExit, """\
@@ -74,7 +74,7 @@ Specify version number explicitly if this is what you want""" % (
     verinfo.size = len(verstream.getvalue())
     verinfo.mtime = time.time()
 
-    tardata = os.popen("git-archive --prefix=%(p)s/ v%(v)s"
+    tardata = os.popen("git archive --prefix=%(p)s/ v%(v)s"
                             % {'p': DIRNAME, 'v': version}).read()
     tarstream = StringIO.StringIO(tardata)
 
