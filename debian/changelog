@@ -1,3 +1,11 @@
+mailpie (0.4.5) lucid; urgency=low
+
+  * mailpie-search: Stop mutt checking a bunch of mailboxes when searching
+  * mailpie-search: Fix quoting of message IDs in gmane URLs
+  * mkdist: don't use "git-foo" style of invoking git commits
+
+ -- Jeff Epler <jepler@unpythonic.net>  Thu, 18 Jul 2013 09:25:09 -0500
+
 mailpie (0.4.4) lucid; urgency=low
 
   * Various bugfixes

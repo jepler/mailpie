@@ -19,14 +19,13 @@ import fcntl
 import os
 import struct
 import sys
-
-TIOCGWINSZ = 0x5413
+import termios
 
 screen_width = screen_height = None
 def screen_size():
     if not os.isatty(2): return 0, 0
     import fcntl
-    res = fcntl.ioctl(2, TIOCGWINSZ, "\0" * 4)
+    res = fcntl.ioctl(2, termios.TIOCGWINSZ, "\0" * 4)
     return struct.unpack("hh", res)
 screen_height, screen_width = screen_size()
 
