@@ -1,6 +1,6 @@
-mailpie - e-mail full text search
+# mailpie - e-mail full text search
 
-PURPOSE
+## PURPOSE
 
 mailpie is a suite of programs for commandline full-text search of large
 e-mail archives.  Keep your inbox uncluttered while retaining the
@@ -11,15 +11,15 @@ built in search facilities because it uses a time-tested full text
 indexer (swish-e).
 
 
-REQUIREMENTS
+## REQUIREMENTS
 
-- python with bsddb support (tested with python 2.4.3 and 2.5.2)
-- swish-e (tested with swish-e 2.4.3 and 2.4.5)
+ - python with bsddb support (tested with python 2.4.3 and 2.5.2)
+ - swish-e (tested with swish-e 2.4.3 and 2.4.5)
 
-mailpie is developed on Linux systems.
+mailpie is developed on Debian GNU/kFreeBSD systems.
 
 
-INSTALLATION
+## INSTALLATION
 
 Site-wide installation:
     $ sudo python setup.py install
@@ -31,7 +31,7 @@ Make sure that $HOME/lib/python is on PYTHONPATH
 See distutils documentation for more installation options.
 
 
-USAGE
+## USAGE
 
 To add a mailbox full of messages to the mailpie storage:
     mailpie-add example.mbox
@@ -54,7 +54,7 @@ mailpie-add):
 For more information on commandline options, see mailpie-xxx --help.
 
 
-TIPS
+## TIPS
 
 Because swish-e can take a long time to merge two index files together,
 mailpie uses a two-level index system.  mailpie-add puts new messages in
@@ -64,14 +64,14 @@ index (this may take quite a long time).  After that, mailpie-add will be fast
 again.
 
 
-PRINCIPLE
+## PRINCIPLE
 
 mailpie-add splits mailboxes into individual messages, which are stored
 in separate files according to their sha1 hash.
 
 When indexing, mailpie-add and mailpie-index convert each message into
 an xml document with markup that indicates headers that should be
-indexed specially (e.g., with the <from></from> tag).  These xml
+indexed specially (e.g., with the `<from>...</from>` tag).  These xml
 documents are then handed off to swish-e to index.
 
 When searching, mailpie-search involkes swish-e to find the messages
@@ -81,7 +81,7 @@ mailpie-search follows in-reply-to and references to find other messages
 in the same thread as matching messages.
 
 
-EFFICIENCY
+## EFFICIENCY
 
 When adding thousands of messages, the average rate on a 1.8GHz machine
 is 60/second.
@@ -90,7 +90,7 @@ When searching tens of thousands of messages, the time is well under 1
 second for 100 results when the swish indexes are in memory.
 
 
-NON-FEATURES
+## NON-FEATURES
 
 The following features are outside the scope of mailpie and are unlikely
 to be added:
@@ -100,14 +100,15 @@ to be added:
  * Support for mailbox formats other than 'mbox'
 
 
-BUGS
+## BUGS
 
  * There are no known bugs at this time
 
 
-RELEASE HISTORY
+## RELEASE HISTORY
 
-v0.4:
+### v0.4
+
  * mailpie-search: Improved error reporting when swish is unhappy with search
    terms
  * mailpie-search: Improved progress reporting
@@ -121,10 +122,12 @@ v0.4:
  * Documentation in the doc/ directory.  builds using asciidoc or readable
    as-is
 
-v0.3:
+### v0.3
+
  * mailpie-add: fix typo that caused it to error at the end
 
-v0.2:
+### v0.2
+
  * mailpie-add: improve speed of by introducing two levels of index
  * mailpie-add: fix time report when there are zero tens-of-seconds
  * mailpie-search: -l, --after=, --before=, and --limit=  to take arguments
@@ -133,10 +136,10 @@ v0.2:
  * all: improve usage messages
  * all: improve progress reporting
 
-v0.1:
+### v0.1
  * Initial release
 
-COPYRIGHT
+## COPYRIGHT
 
 Copyright © 2008 Jeff Epler <jepler@unpythonic.net>
 This program is free software; you can redistribute it and/or modify
