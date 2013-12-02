@@ -121,6 +121,34 @@ to be added:
 
 ## RELEASE HISTORY
 
+### v0.4.6
+
+ * Fix several ways to get the error 'File exists' in maildir mode
+ * Port to Debian GNU/kFreeBSD 7
+
+### v0.4.5
+
+ * Fix build with newer git versions
+ * Invoke mutt without its normal list of mailboxes (can speed startup)
+ * Optionally include links to Gmake based on message IDs
+ * Fix parsing of before= search term
+ * Add maildir support (faster copymail)
+ * Try harder to recognize valid message IDs
+ * Start with fresh ThreadDB when doing full index
+ * Avoid crash on certain misencoded messages
+ * Fix determination of screen size
+ * Get syntax highlighting for this file
+ * Make thread chasing message more useful
+ * Add license notices
+ * Fix some errors seen when freshly indexing all my mail
+ * Only autorun mailer when stdout is a terminal
+ * Fix quoting of arguments to swish
+ * Debian packaging
+
+### v0.4.1
+
+ * Don't ship copies of images included in asciidoc
+
 ### v0.4
 
  * mailpie-search: Improved error reporting when swish is unhappy with search
@@ -155,7 +183,7 @@ to be added:
 
 ## COPYRIGHT
 
-Copyright © 2008 Jeff Epler <jepler@unpythonic.net>
+Copyright © 2008-2013 Jeff Epler <jepler@unpythonic.net>
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
