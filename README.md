@@ -13,8 +13,8 @@ indexer (swish-e).
 
 ## REQUIREMENTS
 
- - python with bsddb support (tested with python 2.4.3 and 2.5.2)
- - swish-e (tested with swish-e 2.4.3 and 2.4.5)
+ - python with bsddb support (tested with python 2.7.3)
+ - swish-e (tested with swish-e 2.4.7)
 
 mailpie is developed on Debian GNU/kFreeBSD systems.
 
@@ -22,14 +22,22 @@ mailpie is developed on Debian GNU/kFreeBSD systems.
 ## INSTALLATION
 
 Site-wide installation:
+
     $ sudo python setup.py install
 
 Personal installation:
+
     $ python setup.py install --home=$HOME
+
 Make sure that $HOME/lib/python is on PYTHONPATH
 
 See distutils documentation for more installation options.
 
+You can also add variables to your bourne-like shell's environment so
+that you can invoke the commands in scripts/ using the modules from lib/
+(e.g., to test without installing):
+
+    $ . environ.sh    
 
 ## USAGE
 
