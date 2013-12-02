@@ -114,11 +114,6 @@ to be added:
  * Support for mailbox formats other than 'mbox'
 
 
-## BUGS
-
- * There are no known bugs at this time
-
-
 ## RELEASE HISTORY
 
 ### v0.4.6
