@@ -35,6 +35,7 @@ DefaultContents XML*
 IndexFile %s
 MetaNames header subject from to cc bcc list-id date
 PropertyNamesDate date
+MaxWordLimit 14
 """
 
 parser = email.Parser.Parser()
