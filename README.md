@@ -42,21 +42,28 @@ that you can invoke the commands in scripts/ using the modules from lib/
 ## USAGE
 
 To add a mailbox full of messages to the mailpie storage:
+
     mailpie-add example.mbox
+
 After adding messages with mailpie-add, the original mbox file is not
 needed to perform searches.
 
 To search for messages:
+
     mailpie-search --after="April 1" from=jepler mutt
+
 This will find messages dated after April 1 where the From: line matches
 'jepler' and the header or body matches 'mutt'.
 
 Available search tags are:
+
     header subject from to cc bcc list-id
+
 Without a tag, the message headers and body are all searched.
 
 To rebuild the index from scratch (e.g., in case of an aborted
 mailpie-add):
+
     mailpie-index
 
 For more information on commandline options, see mailpie-xxx --help.
@@ -104,7 +111,6 @@ The following features are outside the scope of mailpie and are unlikely
 to be added:
 
  * A Graphical User Interface
-
  * Support for mailbox formats other than 'mbox'
 
 
