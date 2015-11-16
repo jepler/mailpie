@@ -47,6 +47,15 @@ Usage: %s [-B dir] [-s secs|-i|-f|-m]
 """ % os.path.basename(sys.argv[0])
     raise SystemExit, result
 
+def make_dir_once(dir, made=set()):
+    if dir in made: return
+    try:
+        os.makedirs(dir)
+    except os.error, detail:
+        if detail.errno != errno.EEXIST: raise os.error, detail
+    made.add(dir)
+
+
 def main(args):
     try:
         opts, args = getopt.getopt(args, "B:s:ifmh?",
@@ -68,6 +77,8 @@ def main(args):
 
     swish = mailpie.swishfilter.Swish(base, since, time.time())
 
+    make_dir_once(base)
+    make_dir_once(base + "-volatile")
     os.chdir(base)
     dirs = ['%02x' % i for i in range(255)]
     for dir in dirs:

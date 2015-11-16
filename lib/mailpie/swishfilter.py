@@ -41,7 +41,7 @@ MaxWordLimit 14
 parser = email.Parser.Parser()
 
 def _get_index_files(base):
-    return [base + ".index", base + ".index.recent"]
+    return [base + "-volatile/index", base + "-volatile/index.recent"]
 
 def get_index_files(base, all=False):
     return [path for path in _get_index_files(base) if all or os.path.exists(path)]
@@ -213,7 +213,7 @@ class Swish:
         self.no_op = True
         self.thread_db = mailpie.threaddb.ThreadDB(self.base, full)
 
-    def subfile(self, ext): return self.base + "." + ext
+    def subfile(self, ext): return self.base + "-volatile/" + ext
     def lastfile(self): return self.subfile("last")
 
     def close(self):

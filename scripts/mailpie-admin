@@ -61,15 +61,16 @@ def get_stats(base):
             disk_size += 512 * st.st_blocks
 
     index_size = 0
-    for suffix in ['index', 'index.prop', 'index.recent',
-                   'index.recent.prop', 'thread.db']:
+    for dirpath, dirnames, filenames in os.walk(base + "-volatile"):
+        for f in filenames:
         f = base + "." + suffix
-        try:
-            st = os.stat(f)
-        except os.error:
-            continue
-        index_size += st.st_size
-        disk_size += 512 * st.st_blocks
+        for f in filenames:
+            try:
+                st = os.stat(os.path.join(dirpath, f))
+            except os.error:
+                continue
+            index_size += st.st_size
+            disk_size += 512 * st.st_blocks
     
     return {'count': count, 'message_size': size, 'disk_size': disk_size,
             'index_size': index_size}

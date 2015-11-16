@@ -22,7 +22,7 @@ import mailpie.log
 msgid_pat = re.compile("<[^>]*>")
 class ThreadDB:
     def __init__(self, base, full):
-        db = base + ".thread.db"
+        db = base + "-volatile/thread.db"
         if full and os.path.exists(db):
             os.unlink(db)
             mailpie.log.log("removed old thread db")
