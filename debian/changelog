@@ -1,3 +1,15 @@
+mailpie (0.4.7) UNRELEASED; urgency=low
+
+  * Fix mailpie-search -t
+
+ -- Jeff Epler <jepler@unpythonic.net>  Tue, 25 Mar 2014 18:37:38 -0500
+
+mailpie (0.4.6) stable; urgency=low
+
+  * Update to new version
+
+ -- Jeff Epler <jepler@unpythonic.net>  Sat, 22 Mar 2014 12:20:16 -0500
+
 mailpie (0.4.5) lucid; urgency=low
 
   * mailpie-search: Stop mutt checking a bunch of mailboxes when searching
