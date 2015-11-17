@@ -217,9 +217,10 @@ def main(args):
 
     if len(hashes) > limit:
         mailpie.log.log("Will only show the first %d of %d matches", limit, len(hashes))
-    hashes = list(set(hashes))[:limit]
+    hashes = set(hashes)
     total = len(hashes)
     for i, hash in enumerate(hashes):
+        if i > limit: break
         maybe_progress("Retrieving message %d of %d", i, total)
         path = os.path.join(base, hash[:2], hash[2:])
         count += copymail(path, f, show_ids, format_mbox)
