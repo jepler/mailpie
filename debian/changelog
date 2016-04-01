@@ -1,4 +1,16 @@
-mailpie (0.4.7) UNRELEASED; urgency=low
+mailpie (0.4.9) stable; urgency=medium
+
+  * Add missing import of errno in mailpie-index
+
+ -- Jeff Epler <jepler@unpythonic.net>  Fri, 01 Apr 2016 06:48:15 -0500
+
+mailpie (0.4.8) stable; urgency=medium
+
+  * Change index paths so they can be on their own fs
+
+ -- Jeff Epler <jepler@unpythonic.net>  Sun, 13 Mar 2016 11:16:39 -0500
+
+mailpie (0.4.7) stable; urgency=low
 
   * Fix mailpie-search -t
 

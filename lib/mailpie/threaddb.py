@@ -1,3 +1,4 @@
+# vim: set fileencoding=utf-8 : sts=4 : et : sw=4
 #    This is a component of mailpie, a full-text search for email
 #
 #    Copyright © 2008 Jeff Epler <jepler@unpythonic.net>

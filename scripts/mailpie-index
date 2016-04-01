@@ -19,6 +19,7 @@
 
 import email.Message
 import email.Parser
+import errno
 import getopt
 import mailpie.swishfilter
 import mailpie.parsedate
