@@ -1,3 +1,9 @@
+mailpie (0.4.10) stable; urgency=medium
+
+  * Fix thread database path in search
+
+ -- Jeff Epler <jepler@unpythonic.net>  Mon, 09 May 2016 19:22:06 -0500
+
 mailpie (0.4.9) stable; urgency=medium
 
   * Add missing import of errno in mailpie-index
