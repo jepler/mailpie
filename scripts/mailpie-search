@@ -198,7 +198,8 @@ def main(args):
         return '"%s"' % arg
 
     if thread:
-        thread_db = bsddb.hashopen(base + ".thread.db", "r")
+        db = base + "-volatile/thread.db"
+        thread_db = bsddb.hashopen(db, "r")
 
     sargs = []
     for a in args:
