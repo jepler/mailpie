@@ -185,7 +185,7 @@ to be added:
 
 ## COPYRIGHT
 
-Copyright © 2008-2013 Jeff Epler <jepler@unpythonic.net>
+Copyright © 2008-2017 Jeff Epler <jepler@gmail.com>
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
