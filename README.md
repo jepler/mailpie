@@ -11,6 +11,13 @@ built in search facilities because it uses a time-tested full text
 indexer (swish-e).
 
 
+## DEVELOPMENT STATUS
+
+Mature.  Mailpie is unlikely to receive future updates from @jepler.
+Instead, I recommend you consider maintained alternatives like [notmuch](https://notmuchmail.org/).
+I am open to a new maintainer taking over mailpie.
+
+
 ## REQUIREMENTS
 
  - python with bsddb support (tested with python 2.7.3)
